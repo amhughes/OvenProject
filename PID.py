@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from max31855 import MAX31855, MAX31855Error
+from max31855.max31855 import MAX31855, MAX31855Error
 import math
 import RPi.GPIO as GPIO
 from time import sleep
@@ -16,11 +16,11 @@ relay = GPIO.PWM(18, 0.5)
 relay.start(0)
 
 sp = 130
-kp = 1
+kp = 100
 ki = 1
 kd = 1
 
-while 1 = 1:
+while 1:
     T = thermocouple.get()
     Trj = thermocouple.get_rj()
     if T < (Trj-10): break
@@ -29,8 +29,11 @@ while 1 = 1:
     Out = kp*(SpIn-In)
     print(T)
     print(Trj)
+    print(In)
+    print(SpIn)
     print(Out)
     relay.ChangeDutyCycle(Out)
+    sleep(1)
 
 thermocouple.cleanup()
 relay.stop()
