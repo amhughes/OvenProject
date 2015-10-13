@@ -2,27 +2,33 @@
 from max31855.max31855 import MAX31855, MAX31855Error
 import math
 import RPi.GPIO as GPIO
-from time import sleep
+from time import perf_counter
 import threading
+
 
 class PIDloop (threading.thread):
     def __init__(self):
         threading.thread.__init__(self)
     def run(self):
+        timold = perf_counter()
+        Told = thermocouple.get()
         while 1:
-            T = thermocouple.get()
-            Trj = thermocouple.get_rj()
-            if T < (Trj-10) | kill = 1: break
-            In  = T/200
-            SpIn = sp/200
-            Out = kp*(SpIn-In)
-            print(T)
-            print(Trj)
-            print(In)
-            print(SpIn)
-            print(Out)
-            relay.ChangeDutyCycle(Out)
-            sleep(1)
+            tim = perf_counter()
+            if (tim-timold)>1
+                T = thermocouple.get()
+                Trj = thermocouple.get_rj()
+                if T < (Trj-10) | kill = 1: break
+                err = sp - T
+                interr += ki*err
+                din = T - Told
+                Out = kp*err + interr - kd*din
+                print(T)
+                print(sp)
+                print(Trj)
+                print(Out)
+                relay.ChangeDutyCycle(Out)
+                tim = timold
+                Told = T
 
 
 cs_pin = 8
