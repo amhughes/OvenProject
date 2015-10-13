@@ -20,8 +20,16 @@ class PIDloop (threading.thread):
                 if T < (Trj-10) | kill = 1: break
                 err = sp - T
                 interr += ki*err
+                if interr > outMax:
+                    interr = outMax
+                elif interr < outMin:
+                    interr = outMin
                 din = T - Told
                 Out = kp*err + interr - kd*din
+                if Out > outMax:
+                    Out = outMax
+                elif Out < outMin:
+                    Out = outMin
                 print(T)
                 print(sp)
                 print(Trj)
@@ -42,6 +50,8 @@ GPIO.setup(18, GPIO.OUT)
 relay = GPIO.PWM(18, 0.5)
 relay.start(0)
 
+outMin = 0
+outMax = 100
 sp = 130
 kp = 100
 ki = 1
