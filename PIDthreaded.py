@@ -14,10 +14,10 @@ class PIDloop (threading.thread):
         Told = thermocouple.get()
         while 1:
             tim = perf_counter()
-            if (tim-timold)>1
+            if (tim-timold)>1:
                 T = thermocouple.get()
                 Trj = thermocouple.get_rj()
-                if T < (Trj-10) | kill = 1: break
+                if T < (Trj-10) | kill == 1: break
                 err = sp - T
                 interr += ki*err
                 if interr > outMax:
