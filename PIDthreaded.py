@@ -5,19 +5,20 @@ import RPi.GPIO as GPIO
 from time import perf_counter
 import threading
 
-
-class PIDloop (threading.thread):
+class PIDloop(threading.Thread):
     def __init__(self):
-        threading.thread.__init__(self)
+        threading.Thread.__init__(self)
     def run(self):
         timold = perf_counter()
         Told = thermocouple.get()
-        while 1:
+        while True:
             tim = perf_counter()
+            interr = 0
             if (tim-timold)>1:
+                timold = tim
                 T = thermocouple.get()
                 Trj = thermocouple.get_rj()
-                if T < (Trj-10) | kill == 1: break
+                if T < (Trj-10) or kill == 1: break
                 err = sp - T
                 interr += ki*err
                 if interr > outMax:
@@ -32,10 +33,8 @@ class PIDloop (threading.thread):
                     Out = outMin
                 print(T)
                 print(sp)
-                print(Trj)
                 print(Out)
                 relay.ChangeDutyCycle(Out)
-                tim = timold
                 Told = T
 
 
@@ -53,9 +52,11 @@ relay.start(0)
 outMin = 0
 outMax = 100
 sp = 130
-kp = 100
+kp = 10
 ki = 1
 kd = 1
+kill = 0
+
 
 PIDloopT = PIDloop()
 
