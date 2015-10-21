@@ -1,4 +1,4 @@
-import sqlite3
+http://www.hobbyking.com/hobbyking/store/__29707__EG_Sport_15_Two_Stroke_Glow_Engine_for_Car.htmlhttp://www.hobbyking.com/hobbyking/store/__29707__EG_Sport_15_Two_Stroke_Glow_Engine_for_Car.htmlimport sqlite3
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
 from contextlib import closing
@@ -29,7 +29,7 @@ def init_db():
 def before_request():
     g.db = connect_db()
 
-@app.teardown_request(exception):
+@app.teardown_request(exception)
 def teardown_request(exception):
     db = getattr(g, 'db', None)
     if db is not None:
@@ -37,9 +37,9 @@ def teardown_request(exception):
 
 @app.route('/')
 def show_entries():
-    cur g.db.execute('select title, text from entries order by ud desc')
+    cur = g.db.execute('select title, text from entries order by ud desc')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show entries.html', entries=entries)
+    return render_template('show_entries.html', entries=entries)
 
 @ap.route('/add', methods=['POST'])
 def add_entry():
