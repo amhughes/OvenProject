@@ -1,4 +1,4 @@
-http://www.hobbyking.com/hobbyking/store/__29707__EG_Sport_15_Two_Stroke_Glow_Engine_for_Car.htmlhttp://www.hobbyking.com/hobbyking/store/__29707__EG_Sport_15_Two_Stroke_Glow_Engine_for_Car.htmlimport sqlite3
+import sqlite3
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
 from contextlib import closing
