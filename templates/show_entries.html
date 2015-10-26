@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+    <form action="{{url_for('tune')}}" method=post class=tune>
+      <dl>
+        <dt>Kp:
+        <dd><input type=text size=18 name=kp>
+        <dt>Ki:
+        <dd><input type=text size=18 name=ki>
+        <dt>Kd:
+        <dd><input type=text size=18 name=kd>
+        <dd><input type=submit value=Update>
+      </dl>
+    </form>
+    <form action="{{url_for('profile')}}" method=post class=profile>
+      <dl>
+        <dt>Hold Temp(Deg F):
+        <dd><input type=text size=18 name=HoldT>
+        <dt>Hold Time(Min):
+        <dd><input type=text size=18 name=HoldTim>
+        <dt>Ramp Up(Deg F/Min):
+        <dd><input type=text size=18 name=UR>
+        <dt>Ramp Down(Deg F/Min):
+        <dd><input type=text size=18 name=DR>
+        <dd><input type=submit value=Select>
+      </dl>
+    </form>
+  {% endif %}
+  <ul class=entries>
+    {% for entry in entries %}
+    <li><h2>{{entry.title}}</h2>{{entry.text|safe}}
+    {% else %}
+    <li><em>Unbelievable. No entries here so far</em>
+    {% endfor %}
+  </ul>
+{% endblock %}
