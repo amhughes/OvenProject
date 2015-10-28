@@ -16,8 +16,6 @@ app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
 
 def init_db():
     with closing(connect_db()) as db:
@@ -29,8 +27,8 @@ def init_db():
 def before_request():
     g.db = connect_db()
 
-@app.teardown_request(exception)
-def teardown_request(exception):
+@app.teardown_request
+def teardown_request():
     db = getattr(g, 'db', None)
     if db is not None:
         db.close()
@@ -70,3 +68,6 @@ def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('show_entries'))
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
