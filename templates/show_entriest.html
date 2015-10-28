@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+    <form action="{{url_for('set')}}" method=post class=set>
+      <dl>
+        <dt>Out:
+        <dd><input type=text size=18 name=out>
+        <dd><input type=submit value=Update>
+      </dl>
+    </form>
+  <ul class=Out>
+    <li><h2>{{Out}}</h2>
+  </ul>
+{% endblock %}
