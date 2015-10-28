@@ -20,6 +20,15 @@ if __name__ == '__main__':
 #@app.teardown_request(exception)
 #def teardown_request(exception):
 
-@app.route('/')
+@app.route('/a')
 def test1():
     return render_template('test1')
+
+@app.route('/')
+def index():
+    return 'Index Page'
+
+@app.route('/hello')
+def hello():
+    return 'Hello World'
+
