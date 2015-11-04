@@ -7,8 +7,8 @@ import threading
 
 tunefile = open('data/tunings.txt', 'r')
 kpt= tunefile.readline()
-kit= tunefile.readline()[4:-2]
-kdt= tunefile.readline()[4:-2]
+kit= tunefile.readline()
+kdt= tunefile.readline()
 tunefile.close()
 
 DEBUG = True
@@ -36,6 +36,7 @@ class datastore:
         self.status = 'Off'
     def record(self):
         self.TL.append(self.T)
+        self.Outl.append(self.Out)
 
 class PIDloop(threading.Thread):
     def __init__(self):
@@ -46,14 +47,14 @@ class PIDloop(threading.Thread):
         Told = thermocouple.get()
         outMin = 0
         outMax = 0
-        while True:
+        interr = 0
+        while not(dat.kill):
             tim = perf_counter()
-            interr = 0
             if (tim-timold)>1:
                 timold = tim
                 dat.T = thermocouple.get()
                 Trj = thermocouple.get_rj()
-                if dat.T < (Trj-10) or dat.kill: break
+                if dat.T < (Trj-10): break
                 err = dat.sp - dat.T
                 interr += dat.ki*err
                 if interr > outMax:
@@ -72,6 +73,25 @@ class PIDloop(threading.Thread):
                 relay.ChangeDutyCycle(dat.Out)
                 Told = dat.T
 
+class RampLoop(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+    def run(self):
+        tmin = 0
+        timoldr = perf_counter()
+        dat.record()
+        while not(dat.kill):
+            timr = perf_counter()
+            if (timr-timoldr)>60:
+                timoldr = timr
+                tmin += 1
+                dat.record()
+                if len(dat.TL) == len(dat.spl):
+                    dat.kill = True
+                    dat.status = 'Complete'
+                    break
+                dat.sp = dat.spl[tmin]
+
 @app.before_request
 def before_request():
     GPIO.setmode(GPIO.BCM)
@@ -85,6 +105,7 @@ def before_request():
     units = 'f'
     thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
     PIDloopT = PIDloop()
+    RampLoopT = RampLoop()
 
 @app.teardown_request(exception)
 def teardown_request(exception):
@@ -94,7 +115,7 @@ def teardown_request(exception):
 
 @app.route('/')
 def main():
-    return render_template('main.html', Out=Out)
+    return render_template('main.html', Out=dat.Out)
 
 @app.route('/preheat', methods=['POST'])
 def preheat():
@@ -108,6 +129,13 @@ def preheat():
 def startrun():
     flash('Run Started')
     dat.status = 'Run'
+    return redirect(url_for('main'))
+
+@app.route('/kill', methods=['POST'])
+def kill():
+    dat.kill = True
+    flash('Run Stopped')
+    dat.status = 'Off'
     return redirect(url_for('main'))
 
 @app.route('/tune', methods=['POST'])
