@@ -115,14 +115,14 @@ def teardown_request(exception):
 
 @app.route('/')
 def main():
-    return render_template('main.html', Out=dat.Out)
+    return render_template('main.html', Out=dat.Out, Status=dat.status)
 
 @app.route('/preheat', methods=['POST'])
 def preheat():
     dat.sp = 100
     PIDloopT.start()
     flash('Preheat Enabled')
-    dat.status = 'Preheat'
+    dat.status = 'PreheatNP'
     return redirect(url_for('main'))
 
 @app.route('/startrun', methods=['POST'])
@@ -153,6 +153,43 @@ def tune():
 
 @app.route('/profile', methods=['POST'])
 def profile():
+    RunName = request.form['Name']
+    HoldT = float(request.form['HoldT'])
+    HoldTim = float(request.form['HoldTim'])
+    UR = float(request.form['UR'])
+    DR = float(request.form['DR'])
+    opf = open('schedule.txt', 'w')
+    opf.write('Time      SP\n')
+    i = 0
+    sploc = dat.sp
+    dat.timel.append(i)
+    dat.spl.append(sploc)
+    opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
+    while dat.spl[i] + UR < HoldT:
+        i += 1
+        sploc += UR
+        dat.spl.append(sploc)
+        dat.timel.append(i)
+        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
+    else:
+        i += 1
+        sploc = HoldT
+        dat.spl.append(sploc)
+        dat.timel.append(i)
+        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
+    for j in range(HoldTim):
+        i += 1
+        dat.spl.append(sploc)
+        dat.timel.append(i)
+        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
+    while dat.spl[i] > dat.sp:
+        i += 1
+        sploc -= DR
+        dat.spl.append(sploc)
+        dat.timel.append(i)
+        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
+    opf.close()
+    dat.status = 'PreheatP'
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 

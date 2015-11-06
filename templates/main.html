@@ -12,8 +12,18 @@
         <dd><input type=submit value=Update>
       </dl>
     </form>
+  {% endif %}
+  {% if status == 'Off' %}
+    <form action="{{url_for('preheat')}}" method=post class=Preheat>
+      <dl>
+        <dd><input type=submit value=Preheat>
+      </dl>
+    </form>
+  {% elif status == 'PreheatNP' %}
     <form action="{{url_for('profile')}}" method=post class=profile>
       <dl>
+        <dt>Run Name:
+        <dd><input type=text size=18 name=Name>
         <dt>Hold Temp(Deg F):
         <dd><input type=text size=18 name=HoldT>
         <dt>Hold Time(Min):
@@ -25,12 +35,17 @@
         <dd><input type=submit value=Select>
       </dl>
     </form>
-  {% endif %}
-  {% if status == 'Off' %}
-
-  {% elif status == 'Preheat' %}
-
+  {% elif status == 'PreheatP' %}
+    <form action="{{url_for('startrun')}}" method=post class=Startrun>
+      <dl>
+        <dd><input type=submit value=Start>
+      </dl>
+    </form>
   {% else %}
-
+    <form action="{{url_for('kill')}}" method=post class=Kill>
+      <dl>
+        <dd><input type=submit value=Kill>
+      </dl>
+    </form>
   {% end if %}
 {% endblock %}
