@@ -3,7 +3,11 @@ from flask import Flask, request, session, redirect, url_for, \
 import math
 import RPi.GPIO as GPIO
 from time import perf_counter
+import time
 import threading
+from RPLCD import CharLCD
+from RPLCD import Alignment, CursorMode, ShiftMode
+from RPLCD import cursor, cleared
 
 tunefile = open('data/tunings.txt', 'r')
 kpt= tunefile.readline()
@@ -71,6 +75,10 @@ class PIDloop(threading.Thread):
                 print(dat.sp)
                 print(dat.Out)
                 relay.ChangeDutyCycle(dat.Out)
+                c.cursor_pos = (1, 0)
+                c.write_string('T:' + str(dat.T) + ' SP:' + str(dat.sp))
+                c.cursor_pos = (2, 0)
+                c.write_string('Out:' + str(dat.Out))
                 Told = dat.T
 
 class RampLoop(threading.Thread):
@@ -104,6 +112,7 @@ def before_request():
     data_pin = 9
     units = 'f'
     thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
+    c = CharLCD(0x27, rows=2, cols=16)
     PIDloopT = PIDloop()
     RampLoopT = RampLoop()
 
@@ -111,6 +120,7 @@ def before_request():
 def teardown_request(exception):
     relay.stop()
     GPIO.cleanup()
+    c.close()
     print('Done!')
 
 @app.route('/')
