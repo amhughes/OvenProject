@@ -1,5 +1,6 @@
 from flask import Flask, request, session, redirect, url_for, \
      abort, render_template, flash
+from max31855.max31855 import MAX31855, MAX31855Error
 import math
 import RPi.GPIO as GPIO
 from time import perf_counter
