@@ -10,9 +10,15 @@ from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
 
 tunefile = open('data/tunings.txt', 'r')
-kpt= tunefile.readline()
-kit= tunefile.readline()
-kdt= tunefile.readline()
+kpt = tunefile.readline()
+kit = tunefile.readline()
+kdt = tunefile.readline()
+kpt = kpt.rstrip('\n')
+kit = kit.rstrip('\n')
+kdt = kdt.rstrip('\n')
+kpt = kpt.lstrip('kp=')
+kit = kit.lstrip('ki=')
+kdt = kdt.lstrip('kd=')
 tunefile.close()
 
 DEBUG = True
@@ -26,9 +32,9 @@ app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
 class datastore:
     def __init__(self, kpti, kiti, kdti):
-        self.kp = float(kpti[4:-2])
-        self.ki = float(kiti[4:-2])
-        self.kd = float(kdti[4:-2])
+        self.kp = float(kpti)
+        self.ki = float(kiti)
+        self.kd = float(kdti)
         self.sp = 100
         self.Out = 0
         self.T = 0
