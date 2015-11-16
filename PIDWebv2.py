@@ -116,12 +116,12 @@ def before_request():
     PIDloopT = PIDloop()
     RampLoopT = RampLoop()
 
-@app.teardown_request(exception)
-def teardown_request(exception):
-    relay.stop()
-    GPIO.cleanup()
-    c.close()
-    print('Done!')
+#@app.teardown_request(exception)
+#def teardown_request(exception):
+#    relay.stop()
+#    GPIO.cleanup()
+#    c.close()
+#    print('Done!')
 
 @app.route('/')
 def main():
