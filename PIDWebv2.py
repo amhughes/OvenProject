@@ -49,6 +49,9 @@ class datastore:
         self.TL.append(self.T)
         self.Outl.append(self.Out)
 
+dat = datastore(kpt, kit, kdt)
+
+
 class PIDloop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -113,13 +116,12 @@ def before_request():
     GPIO.setup(18, GPIO.OUT)
     relay = GPIO.PWM(18, 0.5)
     relay.start(0)
-    dat = datastore(kpt, kit, kdt)
     cs_pin = 8
     clock_pin = 11
     data_pin = 9
     units = 'f'
     thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
-    c = CharLCD(0x27, rows=2, cols=16)
+    c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
     PIDloopT = PIDloop()
     RampLoopT = RampLoop()
 
