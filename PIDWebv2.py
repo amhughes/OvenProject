@@ -44,10 +44,17 @@ class datastore:
         self.Outl = []
         self.TL = []
         self.kill = True
-        self.status = 'Off'
+        self.status = 0
     def record(self):
         self.TL.append(self.T)
         self.Outl.append(self.Out)
+
+#Status:
+#0 = Off
+#1 = Preheat: No Program
+#2 = Preheat: Ready
+#3 = Running
+#4 = Complete
 
 dat = datastore(kpt, kit, kdt)
 
@@ -106,7 +113,7 @@ class RampLoop(threading.Thread):
                 dat.record()
                 if len(dat.TL) == len(dat.spl):
                     dat.kill = True
-                    dat.status = 'Complete'
+                    dat.status = 4
                     break
                 dat.sp = dat.spl[tmin]
 
@@ -141,20 +148,20 @@ def preheat():
     dat.sp = 100
     PIDloopT.start()
     flash('Preheat Enabled')
-    dat.status = 'PreheatNP'
+    dat.status = 1
     return redirect(url_for('main'))
 
 @app.route('/startrun', methods=['POST'])
 def startrun():
     flash('Run Started')
-    dat.status = 'Run'
+    dat.status = 3
     return redirect(url_for('main'))
 
 @app.route('/kill', methods=['POST'])
 def kill():
     dat.kill = True
     flash('Run Stopped')
-    dat.status = 'Off'
+    dat.status = 0
     return redirect(url_for('main'))
 
 @app.route('/tune', methods=['POST'])
@@ -208,7 +215,7 @@ def profile():
         dat.timel.append(i)
         opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
     opf.close()
-    dat.status = 'PreheatP'
+    dat.status = 2
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 

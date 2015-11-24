@@ -13,13 +13,13 @@
       </dl>
     </form>
   {% endif %}
-  {% if status == 'Off' %}
+  {% if Status == 0 %}
     <form action="{{url_for('preheat')}}" method=post class=Preheat>
       <dl>
         <dd><input type=submit value=Preheat>
       </dl>
     </form>
-  {% elif status == 'PreheatNP' %}
+  {% elif Status == 1 %}
     <form action="{{url_for('profile')}}" method=post class=profile>
       <dl>
         <dt>Run Name:
@@ -35,10 +35,16 @@
         <dd><input type=submit value=Select>
       </dl>
     </form>
-  {% elif status == 'PreheatP' %}
+  {% elif Status == 2 %}
     <form action="{{url_for('startrun')}}" method=post class=Startrun>
       <dl>
         <dd><input type=submit value=Start>
+      </dl>
+    </forms>
+  {% elif Status == 4 %}
+    <form action="{{url_for('reset')}}" method=post class=Reset>
+      <dl>
+        <dd><input type=submit value=Reset>
       </dl>
     </form>
   {% else %}
