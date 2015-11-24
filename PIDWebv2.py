@@ -116,9 +116,13 @@ class RampLoop(threading.Thread):
                     dat.status = 4
                     break
                 dat.sp = dat.spl[tmin]
+ 
+@app.route('/')
+def main():
+    return render_template('main.html', Out=dat.Out, Status=dat.status)
 
-@app.before_request
-def before_request():
+@app.route('/preheat', methods=['POST'])
+def preheat():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(18, GPIO.OUT)
     relay = GPIO.PWM(18, 0.5)
@@ -131,20 +135,6 @@ def before_request():
     c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
     PIDloopT = PIDloop()
     RampLoopT = RampLoop()
-
-#@app.teardown_request(exception)
-#def teardown_request(exception):
-#    relay.stop()
-#    GPIO.cleanup()
-#    c.close()
-#    print('Done!')
-
-@app.route('/')
-def main():
-    return render_template('main.html', Out=dat.Out, Status=dat.status)
-
-@app.route('/preheat', methods=['POST'])
-def preheat():
     dat.sp = 100
     PIDloopT.start()
     flash('Preheat Enabled')
@@ -162,6 +152,9 @@ def kill():
     dat.kill = True
     flash('Run Stopped')
     dat.status = 0
+    relay.stop()
+    c.close()
+    GPIO.cleanup()
     return redirect(url_for('main'))
 
 @app.route('/tune', methods=['POST'])
