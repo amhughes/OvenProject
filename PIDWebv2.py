@@ -199,7 +199,7 @@ def profile():
     opf = open('schedule.txt', 'w')
     opf.write('Time      SP\n')
     i = 0
-    sploc = dat.sp
+    sploc = setPoint
     dat.timel.append(i)
     dat.spl.append(sploc)
     opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
