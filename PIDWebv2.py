@@ -220,7 +220,7 @@ def profile():
         dat.spl.append(sploc)
         dat.timel.append(i)
         opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
-    while dat.spl[i] > dat.sp:
+    while dat.spl[i] > setPoint:
         i += 1
         sploc -= DR
         dat.spl.append(sploc)
