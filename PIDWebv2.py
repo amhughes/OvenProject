@@ -136,6 +136,7 @@ c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
 PIDloopT = PIDloop()
 RampLoopT = RampLoop()
 dat.sp = 100
+CSP = 100
 
 def exitClean():
     relay.stop()
@@ -151,15 +152,17 @@ def main():
     elif dat.status == 1:
         return render_template('program.html')
     elif dat.status == 2:
-        return render_template('ready.html', CurrT=CurrentT)
+        return render_template('ready.html', CurrT=CSP)
     elif dat.status == 3:
-        return render_template('run.html', CurrT=CurrentT)
+        return render_template('run.html', CurrT=CSP)
     else:
         return render_template('postrun.html')
 
 @app.route('/preheat', methods=['POST'])
 def preheat():
+    global CSP
     PIDloopT.start()
+    CSP = 150
     flash('Preheat Enabled')
     dat.status = 1
     return redirect(url_for('main'))
