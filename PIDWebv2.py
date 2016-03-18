@@ -68,7 +68,7 @@ class PIDloop(threading.Thread):
         threading.Thread.__init__(self)
     def run(self):
         global CurrentT
-        dat.setT(200)
+        CurrentT = 200
         dat.kill = False
         timold = perf_counter()
         Told = thermocouple.get()
