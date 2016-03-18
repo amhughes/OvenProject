@@ -48,6 +48,8 @@ class datastore:
     def record(self):
         self.TL.append(self.T)
         self.Outl.append(self.Out)
+    def setT(newT):
+        self.T = newT
 
 #Status:
 #0 = Off
@@ -73,7 +75,7 @@ class PIDloop(threading.Thread):
             tim = perf_counter()
             if (tim-timold)>1:
                 timold = tim
-                dat.T = thermocouple.get()
+                dat.setT(thermocouple.get())
                 Trj = thermocouple.get_rj()
                 if dat.T < (Trj-10): break
                 err = dat.sp - dat.T
