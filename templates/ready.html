@@ -13,6 +13,7 @@
       </dl>
     </form>
   {% endif %}
+    Current Temperature: {{ temp }}
     <form action="{{url_for('startrun')}}" method=post class=Startrun>
       <dl>
         <dd><input type=submit value=Start>

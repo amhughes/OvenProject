@@ -120,15 +120,15 @@ class RampLoop(threading.Thread):
 @app.route('/')
 def main():
     if dat.status == 0:
-        return render_template('prerun.html', Out=dat.Out)
+        return render_template('prerun.html')
     elif dat.status == 1:
-        return render_template('program.html', Out=dat.Out)
+        return render_template('program.html')
     elif dat.status == 2:
-        return render_template('ready.html', Out=dat.Out)
+        return render_template('ready.html', temp=dat.T)
     elif dat.status == 3:
-        return render_template('run.html', Out=dat.Out)
+        return render_template('run.html', temp=dat.T)
     else:
-        return render_template('postrun.html', Out=dat.Out)
+        return render_template('postrun.html')
 
 @app.route('/preheat', methods=['POST'])
 def preheat():
@@ -183,7 +183,7 @@ def tune():
 def profile():
     RunName = request.form['Name']
     HoldT = float(request.form['HoldT'])
-    HoldTim = float(request.form['HoldTim'])
+    HoldTim = int(request.form['HoldTim'])
     UR = float(request.form['UR'])
     DR = float(request.form['DR'])
     opf = open('schedule.txt', 'w')
