@@ -124,9 +124,9 @@ def main():
     elif dat.status == 1:
         return render_template('program.html')
     elif dat.status == 2:
-        return render_template('ready.html', CurrT=dat.T)
+        return render_template('ready.html', CurrT=dat.sp)
     elif dat.status == 3:
-        return render_template('run.html', CurrT=dat.T)
+        return render_template('run.html', CurrT=dat.sp)
     else:
         return render_template('postrun.html')
 
