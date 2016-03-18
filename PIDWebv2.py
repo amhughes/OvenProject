@@ -9,7 +9,6 @@ import threading
 from RPLCD import CharLCD
 from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
-import atexit
 
 tunefile = open('data/tunings.txt', 'r')
 kpt = tunefile.readline()
@@ -66,6 +65,16 @@ class PIDloop(threading.Thread):
         threading.Thread.__init__(self)
     def run(self):
         global currentTemp, output, killStatus
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(18, GPIO.OUT)
+        relay = GPIO.PWM(18, 0.5)
+        relay.start(0)
+        cs_pin = 8
+        clock_pin = 11
+        data_pin = 9
+        units = 'f'
+        thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
+        c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
         killStatus = False
         timOld = perf_counter()
         Told = thermocouple.get()
@@ -97,6 +106,9 @@ class PIDloop(threading.Thread):
                 c.cursor_pos = (2, 1)
                 c.write_string('Out:' + str(output))
                 Told = currentTemp
+        relay.stop()
+        c.close()
+        GPIO.cleanup()
 
 class RampLoop(threading.Thread):
     def __init__(self):
@@ -118,26 +130,9 @@ class RampLoop(threading.Thread):
                     break
                 dat.sp = dat.spl[tmin]
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.OUT)
-relay = GPIO.PWM(18, 0.5)
-relay.start(0)
-cs_pin = 8
-clock_pin = 11
-data_pin = 9
-units = 'f'
-thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
-c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
+
 PIDloopT = PIDloop()
 RampLoopT = RampLoop()
-setPoint = 100
-
-def exitClean():
-    relay.stop()
-    c.close()
-    GPIO.cleanup()
-
-atexit.register(exitClean)
 
 @app.route('/')
 def main():
