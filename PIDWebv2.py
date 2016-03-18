@@ -9,6 +9,7 @@ import threading
 from RPLCD import CharLCD
 from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
+import atexit
 
 tunefile = open('data/tunings.txt', 'r')
 kpt = tunefile.readline()
@@ -133,6 +134,13 @@ PIDloopT = PIDloop()
 RampLoopT = RampLoop()
 dat.sp = 100
 
+def exitClean():
+    relay.stop()
+    c.close()
+    GPIO.cleanup()
+
+atexit.register(exitClean)
+
 @app.route('/')
 def main():
     if dat.status == 0:
@@ -164,9 +172,6 @@ def kill():
     dat.kill = True
     flash('Run Stopped')
     dat.status = 0
-    relay.stop()
-    c.close()
-    GPIO.cleanup()
     return redirect(url_for('main'))
 
 @app.route('/tune', methods=['POST'])
