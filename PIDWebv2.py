@@ -72,7 +72,7 @@ class PIDloop(threading.Thread):
         outMin = 0
         outMax = 0
         intErr = 0
-        while not(dat.kill):
+        while not(killStatus):
             tim = perf_counter()
             if (tim-timOld)>1:
                 timOld = tim
