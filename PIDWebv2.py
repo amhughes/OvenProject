@@ -52,7 +52,7 @@ class datastore:
     def setT(newT):
         self.T = newT
 
-CurrentT = 0
+CurrentT = 50
 #Status:
 #0 = Off
 #1 = Preheat: No Program
@@ -154,7 +154,7 @@ def main():
     elif dat.status == 2:
         return render_template('ready.html', CurrT=CSP)
     elif dat.status == 3:
-        return render_template('run.html', CurrT=CSP)
+        return render_template('run.html', CurrT=CurrentT)
     else:
         return render_template('postrun.html')
 
