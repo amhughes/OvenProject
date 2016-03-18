@@ -119,6 +119,20 @@ class RampLoop(threading.Thread):
                     break
                 dat.sp = dat.spl[tmin]
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+relay = GPIO.PWM(18, 0.5)
+relay.start(0)
+cs_pin = 8
+clock_pin = 11
+data_pin = 9
+units = 'f'
+thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
+c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
+PIDloopT = PIDloop()
+RampLoopT = RampLoop()
+dat.sp = 100
+
 @app.route('/')
 def main():
     if dat.status == 0:
@@ -126,27 +140,14 @@ def main():
     elif dat.status == 1:
         return render_template('program.html')
     elif dat.status == 2:
-        return render_template('ready.html', CurrT=dat.sp)
+        return render_template('ready.html', CurrT=dat.T)
     elif dat.status == 3:
-        return render_template('run.html', CurrT=dat.sp)
+        return render_template('run.html', CurrT=dat.T)
     else:
         return render_template('postrun.html')
 
 @app.route('/preheat', methods=['POST'])
 def preheat():
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(18, GPIO.OUT)
-    relay = GPIO.PWM(18, 0.5)
-    relay.start(0)
-    cs_pin = 8
-    clock_pin = 11
-    data_pin = 9
-    units = 'f'
-    thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
-    c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
-    PIDloopT = PIDloop()
-    RampLoopT = RampLoop()
-    dat.sp = 100
     PIDloopT.start()
     flash('Preheat Enabled')
     dat.status = 1
