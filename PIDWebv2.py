@@ -155,7 +155,7 @@ def main():
     elif dat.status == 2:
         return render_template('ready.html', CurrT=CSP)
     elif dat.status == 3:
-        return render_template('run.html', CurrT=CurrentT)
+        return render_template('run.html', CurrT=dat.T)
     else:
         return render_template('postrun.html')
 
