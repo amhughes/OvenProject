@@ -116,10 +116,19 @@ class RampLoop(threading.Thread):
                     dat.status = 4
                     break
                 dat.sp = dat.spl[tmin]
- 
+
 @app.route('/')
 def main():
-    return render_template('main.html', Out=dat.Out, Status=dat.status)
+    if dat.status == 0:
+        return render_template('prerun.html', Out=dat.Out)
+    elif dat.status == 1:
+        return render_template('program.html', Out=dat.Out)
+    elif dat.status == 2:
+        return render_template('ready.html', Out=dat.Out)
+    elif dat.status == 3:
+        return render_template('run.html', Out=dat.Out)
+    else:
+        return render_template('postrun.html', Out=dat.Out)
 
 @app.route('/preheat', methods=['POST'])
 def preheat():

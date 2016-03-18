@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+    <form action="{{url_for('tune')}}" method=post class=tune>
+      <dl>
+        <dt>Kp:
+        <dd><input type=text size=18 name=kp>
+        <dt>Ki:
+        <dd><input type=text size=18 name=ki>
+        <dt>Kd:
+        <dd><input type=text size=18 name=kd>
+        <dd><input type=submit value=Update>
+      </dl>
+    </form>
+  {% endif %}
+    <form action="{{url_for('preheat')}}" method=post class=Preheat>
+      <dl>
+        <dd><input type=submit value=Preheat>
+      </dl>
+    </form>
+{% endblock %}
