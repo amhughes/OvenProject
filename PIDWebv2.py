@@ -10,6 +10,9 @@ from RPLCD import CharLCD
 from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
 
+
+#Import Tunings
+
 tuneFile = open('data/tunings.txt', 'r')
 kpt = tuneFile.readline()
 kit = tuneFile.readline()
@@ -26,6 +29,9 @@ kp = float(kpt)
 ki = float(kit)
 kd = float(kdt)
 
+
+#Flask Settings
+
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin'
@@ -34,6 +40,9 @@ PASSWORD = 'default'
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+
+
+#Variable Creation
 
 timeL = []
 setPointL = []
@@ -53,6 +62,9 @@ killStatus = True
 #2 = Preheat: Ready
 #3 = Running
 #4 = Complete
+
+
+#Control Loop
 
 class PIDloop(threading.Thread):
     def __init__(self):
@@ -104,6 +116,9 @@ class PIDloop(threading.Thread):
         c.close()
         GPIO.cleanup()
 
+
+#Program Loop
+
 class RampLoop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -129,6 +144,7 @@ class RampLoop(threading.Thread):
 
 PIDloopT = PIDloop()
 RampLoopT = RampLoop()
+
 
 @app.route('/')
 def main():
