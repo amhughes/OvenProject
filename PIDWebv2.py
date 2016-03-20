@@ -10,17 +10,21 @@ from RPLCD import CharLCD
 from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
 
-tunefile = open('data/tunings.txt', 'r')
-kpt = tunefile.readline()
-kit = tunefile.readline()
-kdt = tunefile.readline()
+tuneFile = open('data/tunings.txt', 'r')
+kpt = tuneFile.readline()
+kit = tuneFile.readline()
+kdt = tuneFile.readline()
 kpt = kpt.rstrip('\n')
 kit = kit.rstrip('\n')
 kdt = kdt.rstrip('\n')
 kpt = kpt.lstrip('kp=')
 kit = kit.lstrip('ki=')
 kdt = kdt.lstrip('kd=')
-tunefile.close()
+tuneFile.close()
+
+kp = float(kpt)
+ki = float(kit)
+kd = float(kdt)
 
 DEBUG = True
 SECRET_KEY = 'development key'
@@ -31,21 +35,14 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
-class datastore:
-    def __init__(self, kpti, kiti, kdti):
-        self.kp = float(kpti)
-        self.ki = float(kiti)
-        self.kd = float(kdti)
-        self.timel = []
-        self.spl = []
-        self.Outl = []
-        self.TL = []
-    def record(self):
-        self.TL.append(self.T)
-        self.Outl.append(self.Out)
+timeL = []
+setPointL = []
+outputL = []
+tempL = []
 
 currentTemp = 0
-setPoint = 100
+initialTemp = 100
+setPoint = initialTemp
 output = 0
 status = 0
 killStatus = True
@@ -56,9 +53,6 @@ killStatus = True
 #2 = Preheat: Ready
 #3 = Running
 #4 = Complete
-
-dat = datastore(kpt, kit, kdt)
-
 
 class PIDloop(threading.Thread):
     def __init__(self):
@@ -76,26 +70,26 @@ class PIDloop(threading.Thread):
         thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
         c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
         killStatus = False
-        timOld = perf_counter()
-        Told = thermocouple.get()
+        timeOldP = perf_counter()
+        tempOld = thermocouple.get()
         outMin = 0
         outMax = 0
         intErr = 0
         while not(killStatus):
-            tim = perf_counter()
-            if (tim-timOld)>1:
-                timOld = tim
+            timeP = perf_counter()
+            if (timeP-timeOldP)>1:
+                timeOldP = timeP
                 currentTemp = thermocouple.get()
                 Trj = thermocouple.get_rj()
                 if currentTemp < (Trj-10): break
                 err = setPoint - currentTemp
-                intErr += dat.ki*err
+                intErr += ki*err
                 if intErr > outMax:
                     intErr = outMax
                 elif intErr < outMin:
                     intErr = outMin
-                din = currentTemp - Told
-                output = dat.kp*err + intErr - dat.kd*din
+                din = currentTemp - tempOld
+                output = kp*err + intErr - kd*din
                 if output > outMax:
                     output = outMax
                 elif output < outMin:
@@ -105,7 +99,7 @@ class PIDloop(threading.Thread):
                 c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
                 c.cursor_pos = (2, 1)
                 c.write_string('Out:' + str(output))
-                Told = currentTemp
+                tempOld = currentTemp
         relay.stop()
         c.close()
         GPIO.cleanup()
@@ -114,21 +108,23 @@ class RampLoop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
     def run(self):
-        global status, killStatus
+        global status, killStatus, tempL, outputL, setPoint
         tmin = 0
-        timoldr = perf_counter()
-        dat.record()
+        timeOldR = perf_counter()
+        tempL.append(currentTemp)
+        outputL.append(output)
         while not(killStatus):
-            timr = perf_counter()
-            if (timr-timoldr)>60:
-                timoldr = timr
+            timeR = perf_counter()
+            if (timeR-timeOldR)>60:
+                timeOldR = timeR
                 tmin += 1
-                dat.record()
-                if len(dat.TL) == len(dat.spl):
+                tempL.append(currentTemp)
+                outputL.append(output)
+                if len(tempL) == len(setPointL):
                     killStatus = True
                     status = 4
                     break
-                dat.sp = dat.spl[tmin]
+                setPoint = setPointL[tmin]
 
 
 PIDloopT = PIDloop()
@@ -172,56 +168,57 @@ def kill():
 
 @app.route('/tune', methods=['POST'])
 def tune():
+    global kp, ki, kd
     if not session.get('logged_in'):
         abort(401)
-    dat.kp = float(request.form['kp'])
-    dat.ki = float(request.form['ki'])
-    dat.kd = float(request.form['kd'])
-    tunefile = open('data/tunings.txt', 'w')
-    tunefile.write(('kp=' + str(dat.kp) + '\nki=' + str(dat.ki) + '\nkd=' + str(dat.kd) + '\n'))
-    tunefile.close()
+    kp = float(request.form['kp'])
+    ki = float(request.form['ki'])
+    kd = float(request.form['kd'])
+    tuneFile = open('data/tunings.txt', 'w')
+    tuneFile.write(('kp=' + str(kp) + '\nki=' + str(ki) + '\nkd=' + str(kd) + '\n'))
+    tuneFile.close()
     flash('Tunings Updated')
     return redirect(url_for('main'))
 
 @app.route('/profile', methods=['POST'])
 def profile():
-    global status
-    RunName = request.form['Name']
-    HoldT = float(request.form['HoldT'])
-    HoldTim = int(request.form['HoldTim'])
-    UR = float(request.form['UR'])
-    DR = float(request.form['DR'])
-    opf = open('schedule.txt', 'w')
-    opf.write('Time      SP\n')
+    global status, timeL, setPointL
+    runName = request.form['Name']
+    holdTemp = float(request.form['HoldT'])
+    holdTime = int(request.form['HoldTim'])
+    heatRate = float(request.form['UR'])
+    coolRate = float(request.form['DR'])
+    outputFile = open('schedule.txt', 'w')
+    outputFile.write('Time      SP\n')
     i = 0
-    sploc = setPoint
-    dat.timel.append(i)
-    dat.spl.append(sploc)
-    opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
-    while dat.spl[i] + UR < HoldT:
+    setPointIter = setPoint
+    timeL.append(i)
+    setPointL.append(setPointIter)
+    outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    while setPointL[i] + heatRate < holdTemp:
         i += 1
-        sploc += UR
-        dat.spl.append(sploc)
-        dat.timel.append(i)
-        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
+        setPointIter += heatRate
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
     else:
         i += 1
-        sploc = HoldT
-        dat.spl.append(sploc)
-        dat.timel.append(i)
-        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
-    for j in range(HoldTim):
+        setPointIter = holdTemp
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    for j in range(holdTime):
         i += 1
-        dat.spl.append(sploc)
-        dat.timel.append(i)
-        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
-    while dat.spl[i] > setPoint:
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    while setPointL[i] > initialTemp:
         i += 1
-        sploc -= DR
-        dat.spl.append(sploc)
-        dat.timel.append(i)
-        opf.write(str(dat.timel[i]) + ' ' + str(dat.spl[i]) + '\n')
-    opf.close()
+        setPointIter -= coolRate
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    outputFile.close()
     status = 2
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
