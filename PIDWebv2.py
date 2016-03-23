@@ -62,7 +62,7 @@ killStatus = True
 #2 = Preheat: Ready
 #3 = Running
 #4 = Complete
-
+#6 = Preheat: No 2 Part Program
 
 #Control Loop
 
@@ -156,6 +156,8 @@ def main():
         return render_template('ready.html', CurrT=currentTemp)
     elif status == 3:
         return render_template('run.html', CurrT=currentTemp)
+    elif status == 5:
+        return render_template('program2.html')
     else:
         return render_template('postrun.html')
 
@@ -165,6 +167,14 @@ def preheat():
     PIDloopT.start()
     flash('Preheat Enabled')
     status = 1
+    return redirect(url_for('main'))
+
+@app.route('/preheat2', methods=['POST'])
+def preheat():
+    global status
+    PIDloopT.start()
+    flash('Preheat Enabled')
+    status = 5
     return redirect(url_for('main'))
 
 @app.route('/startrun', methods=['POST'])
@@ -224,6 +234,69 @@ def profile():
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
     for j in range(holdTime):
+        i += 1
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    while setPointL[i] > initialTemp:
+        i += 1
+        setPointIter -= coolRate
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    outputFile.close()
+    status = 2
+    flash('Temperature Profile Updated')
+    return redirect(url_for('main'))
+
+@app.route('/profile2', methods=['POST'])
+def profile2():
+    global status, timeL, setPointL
+    runName = request.form['Name']
+    holdTemp1 = float(request.form['HoldT'])
+    holdTime1 = int(request.form['HoldTim'])
+    heatRate1 = float(request.form['UR'])
+    holdTemp2 = float(request.form['HoldT'])
+    holdTime2 = int(request.form['HoldTim'])
+    heatRate2 = float(request.form['UR'])
+    coolRate = float(request.form['DR'])
+    outputFile = open('schedule.txt', 'w')
+    outputFile.write('Time      SP\n')
+    i = 0
+    setPointIter = setPoint
+    timeL.append(i)
+    setPointL.append(setPointIter)
+    outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    while setPointL[i] + heatRate1 < holdTemp:
+        i += 1
+        setPointIter += heatRate1
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    else:
+        i += 1
+        setPointIter = holdTemp1
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    for j in range(holdTime1):
+        i += 1
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    while setPointL[i] + heatRate2 < holdTemp:
+        i += 1
+        setPointIter += heatRate2
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    else:
+        i += 1
+        setPointIter = holdTemp2
+        setPointL.append(setPointIter)
+        timeL.append(i)
+        outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+    for j in range(holdTime2):
         i += 1
         setPointL.append(setPointIter)
         timeL.append(i)

@@ -13,16 +13,22 @@
       </dl>
     </form>
   {% endif %}
-    <form action="{{url_for('profile')}}" method=post class=profile>
+    <form action="{{url_for('profile2')}}" method=post class=profile2>
       <dl>
         <dt>Run Name:
         <dd><input type=text size=18 name=Name>
-        <dt>Ramp Up(Deg F/Min):
-        <dd><input type=text size=18 name=UR>
-        <dt>Hold Temp(Deg F):
-        <dd><input type=text size=18 name=HoldT>
-        <dt>Hold Time(Min):
-        <dd><input type=text size=18 name=HoldTim>
+        <dt>Ramp Up 1(Deg F/Min):
+        <dd><input type=text size=18 name=UR1>
+        <dt>Hold Temp 1(Deg F):
+        <dd><input type=text size=18 name=HoldT1>
+        <dt>Hold Time 1(Min):
+        <dd><input type=text size=18 name=HoldTim1>
+        <dt>Ramp Up 2(Deg F/Min):
+        <dd><input type=text size=18 name=UR2>
+        <dt>Hold Temp 3(Deg F):
+        <dd><input type=text size=18 name=HoldT2>
+        <dt>Hold Time 2(Min):
+        <dd><input type=text size=18 name=HoldTim2>
         <dt>Ramp Down(Deg F/Min):
         <dd><input type=text size=18 name=DR>
         <dd><input type=submit value=Select>

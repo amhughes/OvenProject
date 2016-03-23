@@ -15,7 +15,12 @@
   {% endif %}
     <form action="{{url_for('preheat')}}" method=post class=Preheat>
       <dl>
-        <dd><input type=submit value=Preheat>
+        <dd><input type=submit value='Preheat for 1 part program'>
+      </dl>
+    </form>
+    <form action="{{url_for('preheat2')}}" method=post class=Preheat2>
+      <dl>
+        <dd><input type=submit value='Preheat for 2 part program'>
       </dl>
     </form>
 {% endblock %}
