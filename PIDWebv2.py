@@ -73,7 +73,7 @@ class PIDloop(threading.Thread):
         global currentTemp, output, killStatus
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(18, GPIO.OUT)
-        relay = GPIO.PWM(18, 0.1)
+        relay = GPIO.PWM(18, 1)
         relay.start(0)
         cs_pin = 8
         clock_pin = 11
