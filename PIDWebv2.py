@@ -70,7 +70,7 @@ class PIDloop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
     def run(self):
-        global currentTemp, output, killStatus
+        global currentTemp, output, killStatus, setPoint
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(18, GPIO.OUT)
         relay = GPIO.PWM(18, 1)
