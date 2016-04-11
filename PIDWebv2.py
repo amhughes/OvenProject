@@ -90,21 +90,23 @@ class PIDloop(threading.Thread):
         intErr = 0
         while not(killStatus):
             timeP = perf_counter()
-            if firstRamp and rampEnable:
-                tmin = 0
-                timeOldR = perf_counter()
-                tempL.append(currentTemp)
-                outputL.append(output)
-            if rampEnable and (timeP-timeOldR)>60:
-                timeOldR = timeP
-                tmin += 1
-                tempL.append(currentTemp)
-                outputL.append(output)
-                if len(tempL) == len(setPointL):
-                    killStatus = True
-                    status = 4
-                    break
-                setPoint = setPointL[tmin]
+            if rampEnable:
+                if firstRamp:
+                    tmin = 0
+                    timeOldR = perf_counter()
+                    tempL.append(currentTemp)
+                    outputL.append(output)
+                    firstRamp = False
+                if (timeP-timeOldR)>60:
+                    timeOldR = timeP
+                    tmin += 1
+                    tempL.append(currentTemp)
+                    outputL.append(output)
+                    if len(tempL) == len(setPointL):
+                        killStatus = True
+                        status = 4
+                        break
+                        setPoint = setPointL[tmin]
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
                 currentTemp = thermocouple.get()
