@@ -90,7 +90,7 @@ class PIDloop(threading.Thread):
         intErr = 0
         while not(killStatus):
             timeP = perf_counter()
-            if firstRamp and rampEnable
+            if firstRamp and rampEnable:
                 tmin = 0
                 timeOldR = perf_counter()
                 tempL.append(currentTemp)
