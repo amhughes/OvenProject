@@ -55,6 +55,7 @@ setPoint = initialTemp
 output = 0
 status = 0
 killStatus = True
+rampEnable = False
 
 #Status:
 #0 = Off
@@ -64,13 +65,12 @@ killStatus = True
 #4 = Complete
 #6 = Preheat: No 2 Part Program
 
-#Control Loop
 
 class PIDloop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
     def run(self):
-        global currentTemp, output, killStatus, setPoint
+        global currentTemp, output, killStatus, setPoint, tempL, outputL
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(18, GPIO.OUT)
         relay = GPIO.PWM(18, 1)
@@ -82,6 +82,7 @@ class PIDloop(threading.Thread):
         thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
         c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
         killStatus = False
+        firstRamp = True
         timeOldP = perf_counter()
         tempOld = thermocouple.get()
         outMin = 0
@@ -89,6 +90,21 @@ class PIDloop(threading.Thread):
         intErr = 0
         while not(killStatus):
             timeP = perf_counter()
+            if firstRamp and rampEnable
+                tmin = 0
+                timeOldR = perf_counter()
+                tempL.append(currentTemp)
+                outputL.append(output)
+            if rampEnable and (timeP-timeOldR)>60:
+                timeOldR = timeP
+                tmin += 1
+                tempL.append(currentTemp)
+                outputL.append(output)
+                if len(tempL) == len(setPointL):
+                    killStatus = True
+                    status = 4
+                    break
+                setPoint = setPointL[tmin]
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
                 currentTemp = thermocouple.get()
@@ -116,35 +132,7 @@ class PIDloop(threading.Thread):
         c.close()
         GPIO.cleanup()
 
-
-#Program Loop
-
-class RampLoop(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-    def run(self):
-        global status, killStatus, tempL, outputL, setPoint
-        tmin = 0
-        timeOldR = perf_counter()
-        tempL.append(currentTemp)
-        outputL.append(output)
-        while not(killStatus):
-            timeR = perf_counter()
-            if (timeR-timeOldR)>60:
-                timeOldR = timeR
-                tmin += 1
-                tempL.append(currentTemp)
-                outputL.append(output)
-                if len(tempL) == len(setPointL):
-                    killStatus = True
-                    status = 4
-                    break
-                setPoint = setPointL[tmin]
-
-
 PIDloopT = PIDloop()
-RampLoopT = RampLoop()
-
 
 @app.route('/')
 def main():
@@ -179,8 +167,8 @@ def preheat2():
 
 @app.route('/startrun', methods=['POST'])
 def startrun():
-    global status
-    RampLoopT.start()
+    global status, rampEnable
+    rampEnable = True
     flash('Run Started')
     status = 3
     return redirect(url_for('main'))
