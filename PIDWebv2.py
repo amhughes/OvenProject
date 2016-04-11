@@ -107,9 +107,9 @@ class PIDloop(threading.Thread):
                 elif output < outMin:
                     output = outMin
                 relay.ChangeDutyCycle(output)
-                c.cursor_pos = (1, 1)
+                c.cursor_pos = (0, 0)
                 c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
-                c.cursor_pos = (2, 1)
+                c.cursor_pos = (1, 0)
                 c.write_string('Out:' + str(output))
                 tempOld = currentTemp
         relay.stop()
