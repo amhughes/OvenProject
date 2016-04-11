@@ -180,6 +180,7 @@ def preheat2():
 @app.route('/startrun', methods=['POST'])
 def startrun():
     global status
+    RampLoopT.start()
     flash('Run Started')
     status = 3
     return redirect(url_for('main'))
