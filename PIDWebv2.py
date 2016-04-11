@@ -153,7 +153,7 @@ def main():
     elif status == 1:
         return render_template('program.html')
     elif status == 2:
-        return render_template('ready.html', CurrT=currentTemp)
+        return render_template('ready.html', CurrT=currentTemp, Stat=killStatus, sp=setPoint)
     elif status == 3:
         return render_template('run.html', CurrT=currentTemp)
     elif status == 5:
