@@ -106,7 +106,7 @@ class PIDloop(threading.Thread):
                         killStatus = True
                         status = 4
                         break
-                        setPoint = setPointL[tmin]
+                    setPoint = setPointL[tmin]
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
                 currentTemp = thermocouple.get()
