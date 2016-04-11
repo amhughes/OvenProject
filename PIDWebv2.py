@@ -85,7 +85,7 @@ class PIDloop(threading.Thread):
         timeOldP = perf_counter()
         tempOld = thermocouple.get()
         outMin = 0
-        outMax = 0
+        outMax = 100
         intErr = 0
         while not(killStatus):
             timeP = perf_counter()
@@ -153,7 +153,7 @@ def main():
     elif status == 1:
         return render_template('program.html')
     elif status == 2:
-        return render_template('ready.html', CurrT=currentTemp, Stat=killStatus, sp=setPoint)
+        return render_template('ready.html', CurrT=currentTemp, Stat=killStatus, sp=setPoint, opt=output)
     elif status == 3:
         return render_template('run.html', CurrT=currentTemp)
     elif status == 5:
