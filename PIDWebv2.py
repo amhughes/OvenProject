@@ -244,12 +244,12 @@ def profile():
 def profile2():
     global status, timeL, setPointL
     runName = request.form['Name']
-    holdTemp1 = float(request.form['HoldT'])
-    holdTime1 = int(request.form['HoldTim'])
-    heatRate1 = float(request.form['UR'])
-    holdTemp2 = float(request.form['HoldT'])
-    holdTime2 = int(request.form['HoldTim'])
-    heatRate2 = float(request.form['UR'])
+    holdTemp1 = float(request.form['HoldT1'])
+    holdTime1 = int(request.form['HoldTim1'])
+    heatRate1 = float(request.form['UR1'])
+    holdTemp2 = float(request.form['HoldT2'])
+    holdTime2 = int(request.form['HoldTim2'])
+    heatRate2 = float(request.form['UR2'])
     coolRate = float(request.form['DR'])
     outputFile = open('schedule.txt', 'w')
     outputFile.write('Time      SP\n')
