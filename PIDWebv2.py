@@ -258,7 +258,7 @@ def profile2():
     timeL.append(i)
     setPointL.append(setPointIter)
     outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
-    while setPointL[i] + heatRate1 < holdTemp:
+    while setPointL[i] + heatRate1 < holdTemp1:
         i += 1
         setPointIter += heatRate1
         setPointL.append(setPointIter)
@@ -275,7 +275,7 @@ def profile2():
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
-    while setPointL[i] + heatRate2 < holdTemp:
+    while setPointL[i] + heatRate2 < holdTemp2:
         i += 1
         setPointIter += heatRate2
         setPointL.append(setPointIter)
