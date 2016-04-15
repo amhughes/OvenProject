@@ -1,5 +1,5 @@
 from flask import Flask, request, session, redirect, url_for, \
-     abort, render_template, flash
+     abort, render_template, flash, send_from_directory
 from max31855.max31855 import MAX31855, MAX31855Error
 import math
 import RPi.GPIO as GPIO
@@ -37,9 +37,13 @@ SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'default'
 
+UPLOAD_FOLDER = 'data/uploads'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 #Variable Creation
@@ -80,7 +84,7 @@ class PIDloop(threading.Thread):
         data_pin = 9
         units = 'f'
         thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
-        c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
+#        c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
         killStatus = False
         firstRamp = True
         timeOldP = perf_counter()
@@ -88,27 +92,12 @@ class PIDloop(threading.Thread):
         outMin = 0
         outMax = 100
         intErr = 0
+        logCount = 0
         while not(killStatus):
             timeP = perf_counter()
-            if rampEnable:
-                if firstRamp:
-                    tmin = 0
-                    timeOldR = perf_counter()
-                    tempL.append(currentTemp)
-                    outputL.append(output)
-                    firstRamp = False
-                if (timeP-timeOldR)>60:
-                    timeOldR = timeP
-                    tmin += 1
-                    tempL.append(currentTemp)
-                    outputL.append(output)
-                    if len(tempL) == len(setPointL):
-                        killStatus = True
-                        status = 4
-                        break
-                    setPoint = setPointL[tmin]
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
+                logCount += 1
                 currentTemp = thermocouple.get()
                 Trj = thermocouple.get_rj()
                 if currentTemp < (Trj-10): break
@@ -125,11 +114,38 @@ class PIDloop(threading.Thread):
                 elif output < outMin:
                     output = outMin
                 relay.ChangeDutyCycle(output)
-                c.cursor_pos = (0, 0)
-                c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
-                c.cursor_pos = (1, 0)
-                c.write_string('Out:' + str(output))
+#                c.cursor_pos = (0, 0)
+#                c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
+#                c.cursor_pos = (1, 0)
+#                c.write_string('Out:' + str(output))
                 tempOld = currentTemp
+            if rampEnable:
+                if firstRamp:
+                    tmin = 0
+                    logTime = 0
+                    logCount = 0
+                    timeOldR = perf_counter()
+                    tempL.append(currentTemp)
+                    outputL.append(output)
+                    logFile = open('data/uploads/logfile.txt', 'a')
+                    logFile.write('Time    SP    Temp    Output\n')
+                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
+                    firstRamp = False
+                if logCount = 15
+                    logTime += 0.25
+                    logCount = 0
+                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
+                if (timeP-timeOldR)>60:
+                    timeOldR = timeP
+                    tmin += 1
+                    tempL.append(currentTemp)
+                    outputL.append(output)
+                    if len(tempL) == len(setPointL):
+                        killStatus = True
+                        status = 4
+                        break
+                    setPoint = setPointL[tmin]
+        logFile.close()
         relay.stop()
         c.close()
         GPIO.cleanup()
@@ -180,7 +196,7 @@ def kill():
     global status, killStatus
     killStatus = True
     flash('Run Stopped')
-    status = 0
+    status = 4
     return redirect(url_for('main'))
 
 @app.route('/tune', methods=['POST'])
@@ -205,8 +221,11 @@ def profile():
     holdTime = int(request.form['HoldTim'])
     heatRate = float(request.form['UR'])
     coolRate = float(request.form['DR'])
-    outputFile = open('schedule.txt', 'w')
-    outputFile.write('Time      SP\n')
+    logFile = open('data/uploads/logfile.txt', 'w')
+    logFile.write((runName + '\n'))
+    logFile.close()
+    outputFile = open('data/schedule.txt', 'w')
+    outputFile.write('Time    SP\n')
     i = 0
     setPointIter = setPoint
     timeL.append(i)
@@ -251,8 +270,11 @@ def profile2():
     holdTime2 = int(request.form['HoldTim2'])
     heatRate2 = float(request.form['UR2'])
     coolRate = float(request.form['DR'])
-    outputFile = open('schedule.txt', 'w')
-    outputFile.write('Time      SP\n')
+    logFile = open('data/uploads/logfile.txt', 'w')
+    logFile.write((runName + '\n'))
+    logFile.close()
+    outputFile = open('data/schedule.txt', 'w')
+    outputFile.write('Time    SP\n')
     i = 0
     setPointIter = setPoint
     timeL.append(i)
@@ -302,6 +324,11 @@ def profile2():
     status = 2
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
+
+@app.route('/data')
+def uploaded_file():
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               'logfile.txt')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
