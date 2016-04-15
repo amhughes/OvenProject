@@ -74,7 +74,7 @@ class PIDloop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
     def run(self):
-        global currentTemp, output, killStatus, setPoint, tempL, outputL
+        global currentTemp, output, killStatus, setPoint, tempL, outputL, status
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(18, GPIO.OUT)
         relay = GPIO.PWM(18, 1)
@@ -139,7 +139,6 @@ class PIDloop(threading.Thread):
                     timeOldR = timeP
                     tmin += 1
                     tempL.append(currentTemp)
-                    outputL.append(output)
                     if len(tempL) == len(setPointL):
                         killStatus = True
                         status = 4
@@ -147,7 +146,7 @@ class PIDloop(threading.Thread):
                     setPoint = setPointL[tmin]
         logFile.close()
         relay.stop()
-        c.close()
+#        c.close()
         GPIO.cleanup()
 
 PIDloopT = PIDloop()
