@@ -131,7 +131,7 @@ class PIDloop(threading.Thread):
                     logFile.write('Time    SP    Temp    Output\n')
                     logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
                     firstRamp = False
-                if logCount == 15
+                if logCount == 15:
                     logTime += 0.25
                     logCount = 0
                     logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
