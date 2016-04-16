@@ -134,13 +134,10 @@ class PIDloop(threading.Thread):
                     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
                     spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
-#                    logFile.write('Time    SP    Temp    Output\n')
-#                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
                     firstRamp = False
                 if logCount == 15:
                     logTime += 0.25
                     logCount = 0
-#                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
@@ -237,8 +234,9 @@ def profile():
     holdTime = int(request.form['HoldTim'])
     heatRate = float(request.form['UR'])
     coolRate = float(request.form['DR'])
-    logFile = open('data/uploads/logfile.txt', 'w')
-    logFile.write((runName + '\n'))
+    logFile = open('data/uploads/logfile.csv', 'w')
+    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow([runName])
     logFile.close()
     outputFile = open('data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
@@ -341,7 +339,7 @@ def profile2():
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 
-@app.route('/download', methods=['POST'])
+@app.route('/download.csv', methods=['POST'])
 def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.csv')
@@ -368,7 +366,6 @@ def compprogram(filename):
         logFile = open('data/uploads/logfile.csv', 'w')
         spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow([filename])
-#        logFile.write((filename + '\n'))
         logFile.close()
         outputFile = open('data/schedule.txt', 'w')
         outputFile.write('Time    SP\n')
