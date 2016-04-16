@@ -11,6 +11,7 @@ from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
 import os
 from werkzeug import secure_filename
+import csv
 
 #Import Tunings
 
@@ -352,8 +353,17 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
+            return redirect(url_for('compprogram',
                                     filename=filename))
+
+@app.route('/uploads/<filename>')
+def compprogram(filename):
+    with open(('data/uploads/' + filename) , newline='') as csvfile:
+        spamreader = csv.reader(csvfile, dialect='excel')
+        for row in spamreader:
+            print(', '.join(row))
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
