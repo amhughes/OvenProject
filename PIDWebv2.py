@@ -188,7 +188,7 @@ def preheat2():
     return redirect(url_for('main'))
 
 @app.route('/comppreheat', methods=['POST'])
-def preheat2():
+def comppreheat():
     global status
     PIDloopT.start()
     flash('Preheat Enabled')
