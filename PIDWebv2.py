@@ -324,8 +324,8 @@ def profile2():
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 
-@app.route('/download')
-def downloadfile():
+@app.route('/download', methods=['POST'])
+def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.txt')
 
