@@ -358,12 +358,22 @@ def upload_file():
 
 @app.route('/uploads/<filename>')
 def compprogram(filename):
+    global status, timeL, setPointL
     with open(('data/uploads/' + filename) , newline='') as csvfile:
-        spamreader = csv.reader(csvfile, dialect='excel')
+        spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
+        logFile = open('data/uploads/logfile.txt', 'w')
+        logFile.write((filename + '\n'))
+        logFile.close()
+        outputFile = open('data/schedule.txt', 'w')
+        outputFile.write('Time    SP\n')
         for row in spamreader:
-            print(', '.join(row))
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
+            setPointL.append(row[1])
+            timeL.append(int(row[0]))
+            outputFile.write(str(int(row[0])) + ' ' + str(row[1]) + '\n')
+    outputFile.close()
+    status = 2
+    flash('Temperature Profile Updated')
+    return redirect(url_for('main'))
 
 @app.route('/login', methods=['GET','POST'])
 def login():
