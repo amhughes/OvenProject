@@ -141,7 +141,7 @@ class PIDloop(threading.Thread):
                     logTime += 0.25
                     logCount = 0
 #                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
-                    spamwriter.writerow([logTime],[setPoint],[currentTemp],[output])
+                    spamwriter.writerow([logTime, setPoint, currentTemp, output])
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
                     tmin += 1
