@@ -344,7 +344,7 @@ def profile2():
 @app.route('/download', methods=['POST'])
 def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               'logfile.txt')
+                               'logfile.csv')
 
 def allowed_file(filename):
     return '.' in filename and \
