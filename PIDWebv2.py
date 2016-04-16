@@ -346,8 +346,8 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/uploadprogram', methods=['GET', 'POST'])
-def upload_file():
+@app.route('/uploadp', methods=['GET', 'POST'])
+def uploadp():
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
