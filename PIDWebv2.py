@@ -130,14 +130,18 @@ class PIDloop(threading.Thread):
                     timeOldR = perf_counter()
                     tempL.append(currentTemp)
                     outputL.append(output)
-                    logFile = open('data/uploads/logfile.txt', 'a')
-                    logFile.write('Time    SP    Temp    Output\n')
-                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
+                    logFile = open('data/uploads/logfile.csv', 'a')
+                    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+                    spamwriter.writerow(['Time'],['SP'],['Temp'],['Output'])
+                    spamwriter.writerow([logTime],[setPoint],[currentTemp],[output])
+#                    logFile.write('Time    SP    Temp    Output\n')
+#                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
                     firstRamp = False
                 if logCount == 15:
                     logTime += 0.25
                     logCount = 0
-                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
+#                    logFile.write((str(logTime) + '    ' + str(setPoint) + '    ' + str(currentTemp) + '    ' + str(output) + '\n'))
+                    spamwriter.writerow([logTime],[setPoint],[currentTemp],[output])
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
                     tmin += 1
@@ -361,8 +365,10 @@ def compprogram(filename):
     global status, timeL, setPointL
     with open(('data/uploads/' + filename) , newline='') as csvfile:
         spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-        logFile = open('data/uploads/logfile.txt', 'w')
-        logFile.write((filename + '\n'))
+        logFile = open('data/uploads/logfile.csv', 'w')
+        spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow([filename])
+#        logFile.write((filename + '\n'))
         logFile.close()
         outputFile = open('data/schedule.txt', 'w')
         outputFile.write('Time    SP\n')
