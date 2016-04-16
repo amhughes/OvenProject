@@ -325,7 +325,7 @@ def profile2():
     return redirect(url_for('main'))
 
 @app.route('/data')
-def uploaded_file():
+def downloadfile():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.txt')
 
