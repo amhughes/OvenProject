@@ -9,7 +9,8 @@ import threading
 from RPLCD import CharLCD
 from RPLCD import Alignment, CursorMode, ShiftMode
 from RPLCD import cursor, cleared
-
+import os
+from werkzeug import secure_filename
 
 #Import Tunings
 
@@ -38,7 +39,7 @@ USERNAME = 'admin'
 PASSWORD = 'default'
 
 UPLOAD_FOLDER = 'data/uploads'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['csv'])
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -67,7 +68,8 @@ rampEnable = False
 #2 = Preheat: Ready
 #3 = Running
 #4 = Complete
-#6 = Preheat: No 2 Part Program
+#5 = Preheat: No 2 Part Program
+#6 = Preheat: No Complex Program
 
 
 class PIDloop(threading.Thread):
@@ -163,6 +165,8 @@ def main():
         return render_template('run.html', CurrT=currentTemp, sp=setPoint)
     elif status == 5:
         return render_template('program2.html')
+    elif status == 6:
+        return render_template('compprogram.html')
     else:
         return render_template('postrun.html')
 
@@ -180,6 +184,14 @@ def preheat2():
     PIDloopT.start()
     flash('Preheat Enabled')
     status = 5
+    return redirect(url_for('main'))
+
+@app.route('/comppreheat', methods=['POST'])
+def preheat2():
+    global status
+    PIDloopT.start()
+    flash('Preheat Enabled')
+    status = 6
     return redirect(url_for('main'))
 
 @app.route('/startrun', methods=['POST'])
@@ -328,6 +340,20 @@ def profile2():
 def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.txt')
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/uploadprogram', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
 
 @app.route('/login', methods=['GET','POST'])
 def login():
