@@ -14,7 +14,7 @@
     </form>
   {% endif %}
     Current Temperature: {{ CurrT }}
-    Setpoint: {{ sp }}
+    <p>Setpoint: {{ sp }}
     <form action="{{url_for('kill')}}" method=post class=Kill>
       <dl>
         <dd><input type=submit value=Kill>

@@ -37,7 +37,7 @@ kd = float(kdt)
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin'
-PASSWORD = 'default'
+PASSWORD = 'PrISUm14
 
 UPLOAD_FOLDER = 'data/uploads'
 ALLOWED_EXTENSIONS = set(['csv'])
@@ -72,22 +72,31 @@ rampEnable = False
 #5 = Preheat: No 2 Part Program
 #6 = Preheat: No Complex Program
 
+#Loop for the PID controller, data logging and ramp control
 
 class PIDloop(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
     def run(self):
         global currentTemp, output, killStatus, setPoint, tempL, outputL, status
+
+        #Setup the output relay
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(18, GPIO.OUT)
         relay = GPIO.PWM(18, 1)
         relay.start(0)
+
+        #Setup the thermocouple
         cs_pin = 8
         clock_pin = 11
         data_pin = 9
         units = 'f'
         thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
+
+        #Character LCD Setup, currently abandoned
 #        c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
+
+        #Initial loop variable setup
         killStatus = False
         firstRamp = True
         timeOldP = perf_counter()
@@ -96,8 +105,12 @@ class PIDloop(threading.Thread):
         outMax = 100
         intErr = 0
         logCount = 0
+
+        #Loop
         while not(killStatus):
             timeP = perf_counter()
+
+            #PID controller
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
                 logCount += 1
@@ -105,24 +118,41 @@ class PIDloop(threading.Thread):
                 Trj = thermocouple.get_rj()
                 if currentTemp < (Trj-10): break
                 err = setPoint - currentTemp
+
+                #Integral term
                 intErr += ki*err
+
+                #Integral windup prevention
                 if intErr > outMax:
                     intErr = outMax
                 elif intErr < outMin:
                     intErr = outMin
+
+                #Derivative term
                 din = currentTemp - tempOld
+
+                #Output equation
                 output = kp*err + intErr - kd*din
+
+                #Process output
                 if output > outMax:
                     output = outMax
                 elif output < outMin:
                     output = outMin
                 relay.ChangeDutyCycle(output)
+
+                #Character LCD update, currently abandoned
 #                c.cursor_pos = (0, 0)
 #                c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
 #                c.cursor_pos = (1, 0)
 #                c.write_string('Out:' + str(output))
+
                 tempOld = currentTemp
+
+            #Ramp and data logging
             if rampEnable:
+
+                #Begin run setup
                 if firstRamp:
                     tmin = 0
                     logTime = 0
@@ -135,10 +165,14 @@ class PIDloop(threading.Thread):
                     spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
                     firstRamp = False
+
+                #Data logging
                 if logCount == 15:
                     logTime += 0.25
                     logCount = 0
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
+
+                #setpoint update
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
                     tmin += 1
@@ -148,13 +182,17 @@ class PIDloop(threading.Thread):
                         status = 4
                         break
                     setPoint = setPointL[tmin]
+
+        #Cleanup
         logFile.close()
         relay.stop()
 #        c.close()
         GPIO.cleanup()
 
+#Create loop
 PIDloopT = PIDloop()
 
+#Main page, renders the currently needed information
 @app.route('/')
 def main():
     if status == 0:
@@ -172,6 +210,7 @@ def main():
     else:
         return render_template('postrun.html')
 
+#Enables the preheat and returns for simple programming
 @app.route('/preheat', methods=['POST'])
 def preheat():
     global status
@@ -180,6 +219,7 @@ def preheat():
     status = 1
     return redirect(url_for('main'))
 
+#Enables the preheat and returns for 2 step programming
 @app.route('/preheat2', methods=['POST'])
 def preheat2():
     global status
@@ -188,6 +228,7 @@ def preheat2():
     status = 5
     return redirect(url_for('main'))
 
+#Enables the preheat and returns for complex programming
 @app.route('/comppreheat', methods=['POST'])
 def comppreheat():
     global status
@@ -196,6 +237,7 @@ def comppreheat():
     status = 6
     return redirect(url_for('main'))
 
+#Starts the run
 @app.route('/startrun', methods=['POST'])
 def startrun():
     global status, rampEnable
@@ -204,6 +246,7 @@ def startrun():
     status = 3
     return redirect(url_for('main'))
 
+#Kills the run
 @app.route('/kill', methods=['POST'])
 def kill():
     global status, killStatus
@@ -212,6 +255,7 @@ def kill():
     status = 4
     return redirect(url_for('main'))
 
+#Sets the tuning parameters
 @app.route('/tune', methods=['POST'])
 def tune():
     global kp, ki, kd
@@ -226,9 +270,12 @@ def tune():
     flash('Tunings Updated')
     return redirect(url_for('main'))
 
+#Sets the simple program
 @app.route('/profile', methods=['POST'])
 def profile():
     global status, timeL, setPointL
+
+    #Collect form information
     runName = request.form['Name']
     holdTemp = float(request.form['HoldT'])
     holdTime = int(request.form['HoldTim'])
@@ -245,6 +292,8 @@ def profile():
     timeL.append(i)
     setPointL.append(setPointIter)
     outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write ramp up
     while setPointL[i] + heatRate < holdTemp:
         i += 1
         setPointIter += heatRate
@@ -257,25 +306,33 @@ def profile():
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write ramp down
     for j in range(holdTime):
         i += 1
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write ramp down
     while setPointL[i] > initialTemp:
         i += 1
         setPointIter -= coolRate
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
     outputFile.close()
     status = 2
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 
+#Set two step program
 @app.route('/profile2', methods=['POST'])
 def profile2():
     global status, timeL, setPointL
+
+    #Collect form information
     runName = request.form['Name']
     holdTemp1 = float(request.form['HoldT1'])
     holdTime1 = int(request.form['HoldTim1'])
@@ -294,6 +351,8 @@ def profile2():
     timeL.append(i)
     setPointL.append(setPointIter)
     outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write first ramp up
     while setPointL[i] + heatRate1 < holdTemp1:
         i += 1
         setPointIter += heatRate1
@@ -306,11 +365,15 @@ def profile2():
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write first hold time
     for j in range(holdTime1):
         i += 1
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write second ramp up
     while setPointL[i] + heatRate2 < holdTemp2:
         i += 1
         setPointIter += heatRate2
@@ -323,31 +386,39 @@ def profile2():
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write second hold time
     for j in range(holdTime2):
         i += 1
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
+    #Write ramp down
     while setPointL[i] > initialTemp:
         i += 1
         setPointIter -= coolRate
         setPointL.append(setPointIter)
         timeL.append(i)
         outputFile.write(str(timeL[i]) + ' ' + str(setPointL[i]) + '\n')
+
     outputFile.close()
     status = 2
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 
+#Provide log file for download
 @app.route('/download.csv', methods=['POST'])
 def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.csv')
 
+#File type checking
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+#Recieve program upload
 @app.route('/uploadp', methods=['GET', 'POST'])
 def uploadp():
     if request.method == 'POST':
@@ -358,6 +429,7 @@ def uploadp():
             return redirect(url_for('compprogram',
                                     filename=filename))
 
+#Convert uploaded file to program
 @app.route('/uploads/<filename>')
 def compprogram(filename):
     global status, timeL, setPointL
@@ -378,6 +450,13 @@ def compprogram(filename):
     flash('Temperature Profile Updated')
     return redirect(url_for('main'))
 
+#Kill the program
+@app.route('/end', methods=['POST'])
+def end():
+    GPIO.cleanup()
+    quit()
+
+#Login for tuning change
 @app.route('/login', methods=['GET','POST'])
 def login():
     error = None
@@ -392,6 +471,7 @@ def login():
             return redirect(url_for('main'))
     return render_template('login.html', error=error)
 
+#Logout of tuning
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)

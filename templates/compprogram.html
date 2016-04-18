@@ -13,9 +13,10 @@
       </dl>
     </form>
   {% endif %}
-  Upload a csv file containing the desired temperature profile.
-  The file must only have 2 columns.  The first column is the integer minute for the profile.
-  The second column is the temperature in Fahrenheit at that minute.
+  <p>Upload a csv file containing the desired temperature profile.
+  <p>The file must only have 2 columns.
+  <p>The first column is the integer minute for the profile.
+  <p>The second column is the temperature in Fahrenheit at that minute.
     <form action="{{url_for('uploadp')}}" method=post enctype=multipart/form-data>
       <p><input type=file name=file>
          <input type=submit value=Upload>
