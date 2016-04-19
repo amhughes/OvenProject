@@ -12,6 +12,7 @@ from RPLCD import cursor, cleared
 import os
 from werkzeug import secure_filename
 import csv
+import sys
 
 #Import Tunings
 
@@ -408,7 +409,7 @@ def profile2():
     return redirect(url_for('main'))
 
 #Provide log file for download
-@app.route('/download', methods=['POST'])
+@app.route('/download.csv', methods=['POST'])
 def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.csv')
