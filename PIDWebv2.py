@@ -176,8 +176,9 @@ class PIDloop(threading.Thread):
                 #setpoint update
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
-                    tmin += 1
-                    tempL.append(currentTemp)
+                    if not(abs(err)>5:
+                        tmin += 1
+                        tempL.append(currentTemp)
                     if len(tempL) == len(setPointL):
                         killStatus = True
                         status = 4
