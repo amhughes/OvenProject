@@ -16,7 +16,7 @@ import sys
 
 #Import Tunings
 
-tuneFile = open('data/tunings.txt', 'r')
+tuneFile = open(os.getcwd() + '/data/tunings.txt', 'r')
 kpt = tuneFile.readline()
 kit = tuneFile.readline()
 kdt = tuneFile.readline()
@@ -40,7 +40,7 @@ SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'PrISUm14'
 
-UPLOAD_FOLDER = 'data/uploads'
+UPLOAD_FOLDER = os.getcwd() + '/data/uploads'
 ALLOWED_EXTENSIONS = set(['csv'])
 
 app = Flask(__name__)
@@ -161,7 +161,7 @@ class PIDloop(threading.Thread):
                     timeOldR = perf_counter()
                     tempL.append(currentTemp)
                     outputL.append(output)
-                    logFile = open('data/uploads/logfile.csv', 'a')
+                    logFile = open(os.getcwd() + '/data/uploads/logfile.csv', 'a')
                     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
                     spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
@@ -265,7 +265,7 @@ def tune():
     kp = float(request.form['kp'])
     ki = float(request.form['ki'])
     kd = float(request.form['kd'])
-    tuneFile = open('data/tunings.txt', 'w')
+    tuneFile = open(os.getcwd() + '/data/tunings.txt', 'w')
     tuneFile.write(('kp=' + str(kp) + '\nki=' + str(ki) + '\nkd=' + str(kd) + '\n'))
     tuneFile.close()
     flash('Tunings Updated')
@@ -282,11 +282,11 @@ def profile():
     holdTime = int(request.form['HoldTim'])
     heatRate = float(request.form['UR'])
     coolRate = float(request.form['DR'])
-    logFile = open('data/uploads/logfile.csv', 'w')
+    logFile = open(os.getcwd() + '/data/uploads/logfile.csv', 'w')
     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow([runName])
     logFile.close()
-    outputFile = open('data/schedule.txt', 'w')
+    outputFile = open(os.getcwd() + '/data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
     i = 0
     setPointIter = setPoint
@@ -342,10 +342,10 @@ def profile2():
     holdTime2 = int(request.form['HoldTim2'])
     heatRate2 = float(request.form['UR2'])
     coolRate = float(request.form['DR'])
-    logFile = open('data/uploads/logfile.txt', 'w')
+    logFile = open(os.getcwd() + '/data/uploads/logfile.txt', 'w')
     logFile.write((runName + '\n'))
     logFile.close()
-    outputFile = open('data/schedule.txt', 'w')
+    outputFile = open(os.getcwd() + '/data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
     i = 0
     setPointIter = setPoint
@@ -434,13 +434,13 @@ def uploadp():
 @app.route('/uploads/<filename>')
 def compprogram(filename):
     global status, timeL, setPointL
-    with open(('data/uploads/' + filename) , newline='') as csvfile:
+    with open((os.getcwd() + '/data/uploads/' + filename) , newline='') as csvfile:
         spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-        logFile = open('data/uploads/logfile.csv', 'w')
+        logFile = open(os.getcwd() + '/data/uploads/logfile.csv', 'w')
         spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow([filename])
         logFile.close()
-        outputFile = open('data/schedule.txt', 'w')
+        outputFile = open(os.getcwd() + '/data/schedule.txt', 'w')
         outputFile.write('Time    SP\n')
         for row in spamreader:
             setPointL.append(row[1])
