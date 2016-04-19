@@ -6,9 +6,9 @@ import RPi.GPIO as GPIO
 from time import perf_counter
 import time
 import threading
-from RPLCD import CharLCD
-from RPLCD import Alignment, CursorMode, ShiftMode
-from RPLCD import cursor, cleared
+#from RPLCD import CharLCD
+#from RPLCD import Alignment, CursorMode, ShiftMode
+#from RPLCD import cursor, cleared
 import os
 from werkzeug import secure_filename
 import csv
