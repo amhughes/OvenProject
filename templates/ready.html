@@ -13,7 +13,8 @@
       </dl>
     </form>
   {% endif %}
-    Current Temperature: {{ CurrT }}
+    Preheating for Run
+    <p>Current Temperature: {{ CurrT }}
     <p>Setpoint: {{ sp }}
     <form action="{{url_for('startrun')}}" method=post class=Startrun>
       <dl>
