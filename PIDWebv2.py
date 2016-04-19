@@ -37,7 +37,7 @@ kd = float(kdt)
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin'
-PASSWORD = 'PrISUm14
+PASSWORD = 'PrISUm14'
 
 UPLOAD_FOLDER = 'data/uploads'
 ALLOWED_EXTENSIONS = set(['csv'])
