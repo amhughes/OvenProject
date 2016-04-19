@@ -411,9 +411,6 @@ def profile2():
 #Provide log file for download
 @app.route('/download', methods=['POST'])
 def download():
-    return redirect(url_for('logfile.csv'))
-@app.route('/logfile.csv', methods=['POST'])
-def downloadlog():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.csv')
 
