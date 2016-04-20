@@ -124,27 +124,35 @@ class PIDloop(threading.Thread):
                 if currentTemp < (Trj-10): break
                 err = setPoint - currentTemp
 
-                #Gain Scheduling
+                #Gain scheduling
                 if err > 10:
                     kp = 10
                     ki = 0
                     kd = 0
-                    intErr =0
+                    if kset != 1:
+                        intErr = 0
+                        kset = 1
                 elif err > 5:
                     kp = 5
                     ki = 0.1
                     kd = 10
-                    intErr = 0
+                    if kset != 2:
+                        intErr = 0
+                        kset = 2
                 elif err > 0:
                     kp = 5
                     ki = 0.1
                     kd = 20
-                    intErr = 0
+                    if kset != 3:
+                        intErr = 0
+                        kset = 3
                 else:
                     kp = 0
                     ki = 0
                     kd = 0
-                    intErr = 0
+                    if kset != 4:
+                        intErr = 0
+                        kset = 4
 
                 #Integral term
                 intErr += ki*err
