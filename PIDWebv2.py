@@ -139,6 +139,7 @@ class PIDloop(threading.Thread):
                     kp = 5
                     ki = 0.1
                     kd = 20
+                    intErr = 0
                 else:
                     kp = 0
                     ki = 0
