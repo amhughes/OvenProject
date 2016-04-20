@@ -125,17 +125,17 @@ class PIDloop(threading.Thread):
                 err = setPoint - currentTemp
 
                 #Gain Scheduling
-                if err > 10
+                if err > 10:
                     kp = 10
                     ki = 0
                     kd = 0
                     intErr =0
-                elif err > 5
+                elif err > 5:
                     kp = 5
                     ki = 0.1
                     kd = 10
                     intErr = 0
-                elif err > 0
+                elif err > 0:
                     kp = 5
                     ki = 0.1
                     kd = 20
