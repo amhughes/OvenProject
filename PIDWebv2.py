@@ -17,21 +17,21 @@ from statistics import mean
 
 #Import Tunings
 
-tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'r')
-kpt = tuneFile.readline()
-kit = tuneFile.readline()
-kdt = tuneFile.readline()
-kpt = kpt.rstrip('\n')
-kit = kit.rstrip('\n')
-kdt = kdt.rstrip('\n')
-kpt = kpt.lstrip('kp=')
-kit = kit.lstrip('ki=')
-kdt = kdt.lstrip('kd=')
-tuneFile.close()
+#tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'r')
+#kpt = tuneFile.readline()
+#kit = tuneFile.readline()
+#kdt = tuneFile.readline()
+#kpt = kpt.rstrip('\n')
+#kit = kit.rstrip('\n')
+#kdt = kdt.rstrip('\n')
+#kpt = kpt.lstrip('kp=')
+#kit = kit.lstrip('ki=')
+#kdt = kdt.lstrip('kd=')
+#tuneFile.close()
 
-kp = float(kpt)
-ki = float(kit)
-kd = float(kdt)
+#kp = float(kpt)
+#ki = float(kit)
+#kd = float(kdt)
 
 
 #Flask Settings
@@ -124,6 +124,27 @@ class PIDloop(threading.Thread):
                 if currentTemp < (Trj-10): break
                 err = setPoint - currentTemp
 
+                #Gain Scheduling
+                if err > 10
+                    kp = 10
+                    ki = 0
+                    kd = 0
+                    intErr =0
+                elif err > 5
+                    kp = 5
+                    ki = 0.1
+                    kd = 10
+                    intErr = 0
+                elif err > 0
+                    kp = 5
+                    ki = 0.1
+                    kd = 20
+                else:
+                    kp = 0
+                    ki = 0
+                    kd = 0
+                    intErr = 0
+
                 #Integral term
                 intErr += ki*err
 
@@ -180,7 +201,7 @@ class PIDloop(threading.Thread):
                 #setpoint update
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
-                    if not(abs(err)>5:
+                    if not(abs(err)>5):
                         tmin += 1
                         tempL.append(currentTemp)
                     if len(tempL) == len(setPointL):
