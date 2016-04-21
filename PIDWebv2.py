@@ -121,7 +121,7 @@ class PIDloop(threading.Thread):
                 timeOldP = timeP
                 logCount += 1
                 aveTempL.append(thermocouple.get())
-                currentTemp = mean(tempL)
+                currentTemp = mean(aveTempL)
                 err = setPoint - currentTemp
 
                 #Gain scheduling
