@@ -147,6 +147,9 @@ class PIDloop(threading.Thread):
                         intErr = 0
                         kset = 3
                 elif err > 0:
+                    kp = 10
+                    ki = 0.02
+                    kd = 30
                     if kset != 4:
                         intErr = 0
                         kset = 4
