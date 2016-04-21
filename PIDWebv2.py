@@ -14,6 +14,7 @@ from werkzeug import secure_filename
 import csv
 import sys
 from statistics import mean
+from collections import deque
 
 #Import Tunings
 
@@ -56,6 +57,7 @@ timeL = []
 setPointL = []
 outputL = []
 tempL = []
+aveTempL = deque([],10)
 
 currentTemp = 0
 initialTemp = 100
@@ -103,7 +105,7 @@ class PIDloop(threading.Thread):
         firstRamp = True
         timeOldP = perf_counter()
         tempOld = thermocouple.get()
-        tempL = [tempOld, tempOld, tempOld, tempOld, tempOld]
+        aveTempL.append(tempOld)
         outMin = 0
         outMax = 100
         intErr = 0
@@ -118,11 +120,8 @@ class PIDloop(threading.Thread):
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
                 logCount += 1
-                tempL.append(thermocouple.get())
-                tempL.pop(0)
+                aveTempL.append(thermocouple.get())
                 currentTemp = mean(tempL)
-                Trj = thermocouple.get_rj()
-                if currentTemp < (Trj-10): break
                 err = setPoint - currentTemp
 
                 #Gain scheduling
