@@ -108,6 +108,7 @@ class PIDloop(threading.Thread):
         outMax = 100
         intErr = 0
         logCount = 0
+        kset = 0
 
         #Loop
         while not(killStatus):
@@ -139,20 +140,24 @@ class PIDloop(threading.Thread):
                     if kset != 2:
                         intErr = 0
                         kset = 2
-                elif err > 0:
+                elif err > 2:
                     kp = 5
                     ki = 0.1
                     kd = 20
                     if kset != 3:
                         intErr = 0
                         kset = 3
+                elif err > 0:
+                    if kset != 4:
+                        intErr = 0
+                        kset = 4
                 else:
                     kp = 0
                     ki = 0
                     kd = 0
-                    if kset != 4:
+                    if kset != 5:
                         intErr = 0
-                        kset = 4
+                        kset = 5
 
                 #Integral term
                 intErr += ki*err
