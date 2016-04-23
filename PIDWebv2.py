@@ -137,19 +137,21 @@ class PIDloop(threading.Thread):
                     ki = 0.1
                     kd = 10
                     if kset != 2:
-                        intErr = 0
+                        if kset < 2:
+                            intErr = 0
                         kset = 2
                 elif err > 2:
                     kp = 5
-                    ki = 0.1
+                    ki = 0.2
                     kd = 20
                     if kset != 3:
-                        intErr = 0
+                        if kset < 3:
+                            intErr = 0
                         kset = 3
                 elif err > 0:
-                    kp = 10
-                    ki = 0.02
-                    kd = 30
+                    kp = 5
+                    ki = 0.1
+                    kd = 25
                     if kset != 4:
                         intErr = 0
                         kset = 4
