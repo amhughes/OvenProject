@@ -13,24 +13,26 @@ import os
 from werkzeug import secure_filename
 import csv
 import sys
+from statistics import mean
+from collections import deque
 
 #Import Tunings
 
-tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'r')
-kpt = tuneFile.readline()
-kit = tuneFile.readline()
-kdt = tuneFile.readline()
-kpt = kpt.rstrip('\n')
-kit = kit.rstrip('\n')
-kdt = kdt.rstrip('\n')
-kpt = kpt.lstrip('kp=')
-kit = kit.lstrip('ki=')
-kdt = kdt.lstrip('kd=')
-tuneFile.close()
+#tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'r')
+#kpt = tuneFile.readline()
+#kit = tuneFile.readline()
+#kdt = tuneFile.readline()
+#kpt = kpt.rstrip('\n')
+#kit = kit.rstrip('\n')
+#kdt = kdt.rstrip('\n')
+#kpt = kpt.lstrip('kp=')
+#kit = kit.lstrip('ki=')
+#kdt = kdt.lstrip('kd=')
+#tuneFile.close()
 
-kp = float(kpt)
-ki = float(kit)
-kd = float(kdt)
+#kp = float(kpt)
+#ki = float(kit)
+#kd = float(kdt)
 
 
 #Flask Settings
@@ -55,6 +57,7 @@ timeL = []
 setPointL = []
 outputL = []
 tempL = []
+aveTempL = deque([],10)
 
 currentTemp = 0
 initialTemp = 100
@@ -102,10 +105,12 @@ class PIDloop(threading.Thread):
         firstRamp = True
         timeOldP = perf_counter()
         tempOld = thermocouple.get()
+        aveTempL.append(tempOld)
         outMin = 0
         outMax = 100
         intErr = 0
         logCount = 0
+        kset = 0
 
         #Loop
         while not(killStatus):
@@ -115,10 +120,48 @@ class PIDloop(threading.Thread):
             if (timeP-timeOldP)>1:
                 timeOldP = timeP
                 logCount += 1
-                currentTemp = thermocouple.get()
-                Trj = thermocouple.get_rj()
-                if currentTemp < (Trj-10): break
+                aveTempL.append(thermocouple.get())
+                currentTemp = mean(aveTempL)
                 err = setPoint - currentTemp
+
+                #Gain scheduling
+                if err > 10:
+                    kp = 10
+                    ki = 0
+                    kd = 0
+                    if kset != 1:
+                        intErr = 0
+                        kset = 1
+                elif err > 5:
+                    kp = 5
+                    ki = 0.1
+                    kd = 10
+                    if kset != 2:
+                        if kset < 2:
+                            intErr = 0
+                        kset = 2
+                elif err > 2:
+                    kp = 5
+                    ki = 0.2
+                    kd = 20
+                    if kset != 3:
+                        if kset < 3:
+                            intErr = 0
+                        kset = 3
+                elif err > 0:
+                    kp = 5
+                    ki = 0.1
+                    kd = 25
+                    if kset != 4:
+                        intErr = 0
+                        kset = 4
+                else:
+                    kp = 0
+                    ki = 0
+                    kd = 0
+                    if kset != 5:
+                        intErr = 0
+                        kset = 5
 
                 #Integral term
                 intErr += ki*err
@@ -176,8 +219,9 @@ class PIDloop(threading.Thread):
                 #setpoint update
                 if (timeP-timeOldR)>60:
                     timeOldR = timeP
-                    tmin += 1
-                    tempL.append(currentTemp)
+                    if not(abs(err)>5):
+                        tmin += 1
+                        tempL.append(currentTemp)
                     if len(tempL) == len(setPointL):
                         killStatus = True
                         status = 4
