@@ -300,6 +300,22 @@ def kill():
     status = 4
     return redirect(url_for('main'))
 
+#Allows the uploads of tunings
+@app.route('/tuning', methods=['POST'])
+def tunepage():
+    return render_template('tuning.html')
+
+#Recieve program upload
+@app.route('/uploadt', methods=['GET', 'POST'])
+def uploadp():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('tune',
+                                    filename=filename))
+
 #Sets the tuning parameters
 @app.route('/tune', methods=['POST'])
 def tune():
