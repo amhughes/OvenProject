@@ -19,12 +19,14 @@ from collections import deque
 #Import Tunings
 with open(('/home/pi/OvenProject/data/tunefile.csv') , newline='') as csvfile:
     spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-    next(spamreader, None)
     for row in spamreader:
-        tuneParams[0].append(row[0])
-        tuneParams[1].append(row[1])
-        tuneParams[2].append(row[2])
-        tuneParams[3].append(row[3])
+        if firstLine:
+            firstLine = False
+        else:
+            tuneParams[0].append(row[0])
+            tuneParams[1].append(row[1])
+            tuneParams[2].append(row[2])
+            tuneParams[3].append(row[3])
 
 #Flask Settings
 
@@ -295,13 +297,16 @@ def tune(filename):
         tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
         spamwriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
-        next(spamreader, None)
+        firstLine = True
         for row in spamreader:
-            tuneParams[0].append(row[0])
-            tuneParams[1].append(row[1])
-            tuneParams[2].append(row[2])
-            tuneParams[3].append(row[3])
-            spamwriter.writerow([row[0], row[1], row[2], row[3]])
+            if firstLine:
+                firstLine = False
+            else:
+                tuneParams[0].append(row[0])
+                tuneParams[1].append(row[1])
+                tuneParams[2].append(row[2])
+                tuneParams[3].append(row[3])
+                spamwriter.writerow([row[0], row[1], row[2], row[3]])
         tuneFile.close()
     flash('Tunings Updated')
     return redirect(url_for('main'))
