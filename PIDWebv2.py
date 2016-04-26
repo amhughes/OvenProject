@@ -16,9 +16,9 @@ from collections import deque
 #Import Tunings
 tuneParams = [[],[],[],[]]
 with open(('/home/pi/OvenProject/data/tunefile.csv') , newline='') as csvfile:
-    spamreader = csv.reader(csvfile, dialect='excel')
-    next(spamreader)
-    for row in spamreader:
+    tunereader = csv.reader(csvfile, dialect='excel')
+    next(tunereader)
+    for row in tunereader:
         tuneParams[0].append(float(row[0]))
         tuneParams[1].append(float(row[1]))
         tuneParams[2].append(float(row[2]))
@@ -163,16 +163,16 @@ class PIDloop(threading.Thread):
                     tempL.append(currentTemp)
                     outputL.append(output)
                     logFile = open('/home/pi/OvenProject/data/logfile.csv', 'a')
-                    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
-                    spamwriter.writerow([logTime, setPoint, currentTemp, output])
+                    logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+                    logwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
+                    logwriter.writerow([logTime, setPoint, currentTemp, output])
                     firstRamp = False
 
                 #Data logging
                 if logCount == 15:
                     logTime += 0.25
                     logCount = 0
-                    spamwriter.writerow([logTime, setPoint, currentTemp, output])
+                    logwriter.writerow([logTime, setPoint, currentTemp, output])
 
                 #setpoint update
                 if (timeP-timeOldR)>60:
@@ -280,17 +280,17 @@ def tune(filename):
     if not session.get('logged_in'):
         abort(401)
     with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
-        spamreader = csv.reader(csvfile, dialect='excel')
+        tunereader = csv.reader(csvfile, dialect='excel')
         tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
-        spamwriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
-        next(spamreader)
-        for row in spamreader:
+        tunewriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+        tunewriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
+        next(tunereader)
+        for row in tunereader:
             tuneParams[0].append(float(row[0]))
             tuneParams[1].append(float(row[1]))
             tuneParams[2].append(float(row[2]))
             tuneParams[3].append(float(row[3]))
-            spamwriter.writerow([row[0], row[1], row[2], row[3]])
+            tunewriter.writerow([row[0], row[1], row[2], row[3]])
         tuneFile.close()
     flash('Tunings Updated')
     return redirect(url_for('main'))
@@ -307,8 +307,8 @@ def profile():
     heatRate = float(request.form['UR'])
     coolRate = float(request.form['DR'])
     logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
-    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow([runName])
+    logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+    logwriter.writerow([runName])
     logFile.close()
     outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
@@ -367,8 +367,8 @@ def profile2():
     heatRate2 = float(request.form['UR2'])
     coolRate = float(request.form['DR'])
     logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
-    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow([runName])
+    logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+    logwriter.writerow([runName])
     logFile.close()
     outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
@@ -465,14 +465,14 @@ def uploadp():
 def compprogram(filename):
     global status, timeL, setPointL
     with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
-        spamreader = csv.reader(csvfile, dialect='excel')
+        progreader = csv.reader(csvfile, dialect='excel')
         logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
-        spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow([filename])
+        logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+        logwriter.writerow([filename])
         logFile.close()
         outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
         outputFile.write('Time    SP\n')
-        for row in spamreader:
+        for row in progreader:
             setPointL.append(row[1])
             timeL.append(int(row[0]))
             outputFile.write(str(int(row[0])) + ' ' + str(row[1]) + '\n')
