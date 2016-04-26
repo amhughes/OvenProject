@@ -34,7 +34,7 @@ SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'PrISUm14'
 
-UPLOAD_FOLDER = '/home/pi/OvenProject/data/uploads'
+UPLOAD_FOLDER = '/home/pi/OvenProject/data'
 ALLOWED_EXTENSIONS = set(['csv'])
 
 app = Flask(__name__)
@@ -173,7 +173,7 @@ class PIDloop(threading.Thread):
                     timeOldR = perf_counter()
                     tempL.append(currentTemp)
                     outputL.append(output)
-                    logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'a')
+                    logFile = open('/home/pi/OvenProject/data/s/logfile.csv', 'a')
                     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
                     spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
@@ -291,7 +291,7 @@ def tune(filename):
     global tuneParams
     if not session.get('logged_in'):
         abort(401)
-    with open(('/home/pi/OvenProject/data/uploads/' + filename) , newline='') as csvfile:
+    with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
         spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
         tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
         spamwriter = csv.writer(tuneFile, dialect='excel')
@@ -318,7 +318,7 @@ def profile():
     holdTime = int(request.form['HoldTim'])
     heatRate = float(request.form['UR'])
     coolRate = float(request.form['DR'])
-    logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'w')
+    logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow([runName])
     logFile.close()
@@ -378,7 +378,7 @@ def profile2():
     holdTime2 = int(request.form['HoldTim2'])
     heatRate2 = float(request.form['UR2'])
     coolRate = float(request.form['DR'])
-    logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'w')
+    logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow([runName])
     logFile.close()
@@ -476,9 +476,9 @@ def uploadp():
 @app.route('/uploads/<filename>')
 def compprogram(filename):
     global status, timeL, setPointL
-    with open(('/home/pi/OvenProject/data/uploads/' + filename) , newline='') as csvfile:
+    with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
         spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-        logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'w')
+        logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
         spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow([filename])
         logFile.close()
