@@ -1,24 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if session.logged_in %}
-    <form action="{{url_for('tune')}}" method=post class=tune>
-      <dl>
-        <dt>Kp:
-        <dd><input type=text size=18 name=kp>
-        <dt>Ki:
-        <dd><input type=text size=18 name=ki>
-        <dt>Kd:
-        <dd><input type=text size=18 name=kd>
-        <dd><input type=submit value=Update>
-      </dl>
-    </form>
   {% endif %}
   <p>Upload a csv file containing the desired gain schedule.
   <p>The file must only have 4 columns.
-  <p>The first column is the error cutoff for the gain (the last row should be any negative number).
+  <p>The first column is the error cutoff for the gain (any error less than the last number gets all gains of zero).
   <p>The second column is the proportional gain (% on per deg F error).
   <p>The third column is the integral gain (% on per deg F error accumulated).
   <p>The fourth column is the derivative gain (% on per deg F measurement decrease).
+  <p>The current file should be downloaded below to edit and upload (add csv extension to use).
+    <form action="{{url_for('downloadt')}}" method=post class=downloadt>
+      <dl>
+        <dd><input type=submit value='Current Tunings'>
+      </dl>
+    </form>
     <form action="{{url_for('uploadt')}}" method=post enctype=multipart/form-data>
       <p><input type=file name=file>
          <input type=submit value=Upload>

@@ -17,22 +17,17 @@ from statistics import mean
 from collections import deque
 
 #Import Tunings
-
-#tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'r')
-#kpt = tuneFile.readline()
-#kit = tuneFile.readline()
-#kdt = tuneFile.readline()
-#kpt = kpt.rstrip('\n')
-#kit = kit.rstrip('\n')
-#kdt = kdt.rstrip('\n')
-#kpt = kpt.lstrip('kp=')
-#kit = kit.lstrip('ki=')
-#kdt = kdt.lstrip('kd=')
-#tuneFile.close()
-
-#kp = float(kpt)
-#ki = float(kit)
-#kd = float(kdt)
+with open(('/home/pi/OvenProject/data/tunefile.csv') , newline='') as csvfile:
+    spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
+    for row in spamreader:
+        tuneParams[0].append(row[0])
+        tuneParams[1].append(row[1])
+        tuneParams[2].append(row[2])
+        tuneParams[3].append(row[3])
+    tuneParams[0].pop(0)
+    tuneParams[1].pop(0)
+    tuneParams[2].pop(0)
+    tuneParams[3].pop(0)
 
 
 #Flask Settings
@@ -125,43 +120,20 @@ class PIDloop(threading.Thread):
                 err = setPoint - currentTemp
 
                 #Gain scheduling
-                if err > 10:
-                    kp = 10
-                    ki = 0
-                    kd = 0
-                    if kset != 1:
-                        intErr = 0
-                        kset = 1
-                elif err > 5:
-                    kp = 5
-                    ki = 0.1
-                    kd = 10
-                    if kset != 2:
-                        if kset < 2:
-                            intErr = 0
-                        kset = 2
-                elif err > 2:
-                    kp = 5
-                    ki = 0.2
-                    kd = 20
-                    if kset != 3:
-                        if kset < 3:
-                            intErr = 0
-                        kset = 3
-                elif err > 0:
-                    kp = 5
-                    ki = 0.1
-                    kd = 25
-                    if kset != 4:
-                        intErr = 0
-                        kset = 4
-                else:
-                    kp = 0
-                    ki = 0
-                    kd = 0
-                    if kset != 5:
-                        intErr = 0
-                        kset = 5
+                for n in range(len(tuneParams)):
+                    if err > tuneParams[0][n]:
+                        kp = tuneParams[1][n]
+                        ki = tuneParams[2][n]
+                        kd = tuneParams[3][n]
+                        if kset != n:
+                            if kset < n:
+                                intErr = 0
+                            kset = n
+                        break
+                    else:
+                        kp = 0
+                        ki = 0
+                        kd = 0
 
                 #Integral term
                 intErr += ki*err
@@ -318,16 +290,26 @@ def uploadp():
 
 #Sets the tuning parameters
 @app.route('/tune', methods=['POST'])
-def tune():
-    global kp, ki, kd
+def tune(filename):
+    global tuneParams
     if not session.get('logged_in'):
         abort(401)
-    kp = float(request.form['kp'])
-    ki = float(request.form['ki'])
-    kd = float(request.form['kd'])
-    tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'w')
-    tuneFile.write(('kp=' + str(kp) + '\nki=' + str(ki) + '\nkd=' + str(kd) + '\n'))
-    tuneFile.close()
+    with open(('/home/pi/OvenProject/data/uploads/' + filename) , newline='') as csvfile:
+        spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
+        tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
+        spamwriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
+        for row in spamreader:
+            tuneParams[0].append(row[0])
+            tuneParams[1].append(row[1])
+            tuneParams[2].append(row[2])
+            tuneParams[3].append(row[3])
+            spamwriter.writerow([row[0], row[1], row[2], row[3]])
+        tuneParams[0].pop(0)
+        tuneParams[1].pop(0)
+        tuneParams[2].pop(0)
+        tuneParams[3].pop(0)
+        tuneFile.close()
     flash('Tunings Updated')
     return redirect(url_for('main'))
 
@@ -474,6 +456,11 @@ def profile2():
 def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.csv')
+
+@app.route('/downloadt', methods=['POST'])
+def download():
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               'tunefile.csv')
 
 #File type checking
 def allowed_file(filename):
