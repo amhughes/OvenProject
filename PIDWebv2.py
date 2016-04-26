@@ -292,9 +292,9 @@ def tune(filename):
     if not session.get('logged_in'):
         abort(401)
     with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
-        spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
+        spamreader = csv.reader(csvfile, dialect='excel')
         tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
-        spamwriter = csv.writer(tuneFile, dialect='excel')
+        spamwriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
         next(spamreader)
         for row in spamreader:
