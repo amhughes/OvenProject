@@ -477,7 +477,7 @@ def uploadp():
 def compprogram(filename):
     global status, timeL, setPointL
     with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
-        spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
+        spamreader = csv.reader(csvfile, dialect='excel')
         logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
         spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow([filename])
