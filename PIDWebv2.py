@@ -6,9 +6,6 @@ import RPi.GPIO as GPIO
 from time import perf_counter
 import time
 import threading
-#from RPLCD import CharLCD
-#from RPLCD import Alignment, CursorMode, ShiftMode
-#from RPLCD import cursor, cleared
 import os
 from werkzeug import secure_filename
 import csv
@@ -89,9 +86,6 @@ class PIDloop(threading.Thread):
         units = 'f'
         thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
 
-        #Character LCD Setup, currently abandoned
-#        c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
-
         #Initial loop variable setup
         killStatus = False
         firstRamp = True
@@ -155,12 +149,6 @@ class PIDloop(threading.Thread):
                     output = outMin
                 relay.ChangeDutyCycle(output)
 
-                #Character LCD update, currently abandoned
-#                c.cursor_pos = (0, 0)
-#                c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
-#                c.cursor_pos = (1, 0)
-#                c.write_string('Out:' + str(output))
-
                 tempOld = currentTemp
 
             #Ramp and data logging
@@ -201,7 +189,6 @@ class PIDloop(threading.Thread):
         #Cleanup
         logFile.close()
         relay.stop()
-#        c.close()
         GPIO.cleanup()
 
 #Create loop
