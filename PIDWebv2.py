@@ -173,7 +173,7 @@ class PIDloop(threading.Thread):
                     timeOldR = perf_counter()
                     tempL.append(currentTemp)
                     outputL.append(output)
-                    logFile = open('/home/pi/OvenProject/data/s/logfile.csv', 'a')
+                    logFile = open('/home/pi/OvenProject/data/logfile.csv', 'a')
                     spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
                     spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
                     spamwriter.writerow([logTime, setPoint, currentTemp, output])
