@@ -271,7 +271,7 @@ def kill():
 
 #Allows the uploads of tunings
 @app.route('/tuning', methods=['GET', 'POST'])
-def tunepage():
+def tuning():
     return render_template('tuning.html')
 
 #Recieve program upload
