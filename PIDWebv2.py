@@ -131,6 +131,7 @@ class PIDloop(threading.Thread):
                         kp = 0
                         ki = 0
                         kd = 0
+                        intErr = 0
 
                 #Integral term
                 intErr += ki*err
