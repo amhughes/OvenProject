@@ -286,7 +286,7 @@ def uploadt():
                                     filename=filename))
 
 #Sets the tuning parameters
-@app.route('/tune', methods=['POST'])
+@app.route('/tune/<filename>')
 def tune(filename):
     global tuneParams
     if not session.get('logged_in'):
