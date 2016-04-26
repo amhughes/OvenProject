@@ -17,6 +17,7 @@ from statistics import mean
 from collections import deque
 
 #Import Tunings
+tuneParams = [[],[],[],[]]
 with open(('/home/pi/OvenProject/data/tunefile.csv') , newline='') as csvfile:
     spamreader = csv.reader(csvfile, dialect='excel')
     next(spamreader)
