@@ -276,7 +276,7 @@ def tunepage():
 
 #Recieve program upload
 @app.route('/uploadt', methods=['GET', 'POST'])
-def uploadp():
+def uploadt():
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
