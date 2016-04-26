@@ -19,7 +19,7 @@ from collections import deque
 #Import Tunings
 with open(('/home/pi/OvenProject/data/tunefile.csv') , newline='') as csvfile:
     spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-    next(spamreader)
+    next(spamreader, None)
     for row in spamreader:
         tuneParams[0].append(row[0])
         tuneParams[1].append(row[1])
@@ -295,7 +295,7 @@ def tune(filename):
         tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
         spamwriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
-        next(spamreader)
+        next(spamreader, None)
         for row in spamreader:
             tuneParams[0].append(row[0])
             tuneParams[1].append(row[1])
