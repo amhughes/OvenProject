@@ -452,7 +452,7 @@ def download():
                                'logfile.csv')
 
 @app.route('/downloadt', methods=['POST'])
-def download():
+def downloadt():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'tunefile.csv')
 
