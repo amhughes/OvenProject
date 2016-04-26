@@ -270,7 +270,7 @@ def kill():
     return redirect(url_for('main'))
 
 #Allows the uploads of tunings
-@app.route('/tuning', methods=['POST'])
+@app.route('/tuning', methods=['GET', 'POST'])
 def tunepage():
     return render_template('tuning.html')
 
