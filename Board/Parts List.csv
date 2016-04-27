@@ -1,0 +1,13 @@
+Part,Value,Type,Comment
+R1,2.2 kOhm,0603 Resistor,
+R2,2.2 kOhm,0603 Resistor,
+R3,3.3 kOhm,0603 Resistor,
+R4,3.3 kOhm,0603 Resistor,
+C1,100 nF,0603 Capacitor,Unnessessary if using a regulated power supply
+C2,10 nF,0603 Capacitor,
+U1,MAX31855KASA+,8-SOIC K-Type Thermocouple Interface,
+Pi,2x13,Female Header,Installed beneath the board
+Console,1x3,Male Header,For use with a console cable
+TC,2 pin,Molex Minifit Jr. Board Connector,
+Relay,2 pin,Molex Minifit Jr. Board Connector,
+LCD,4 pin,Molex Minifit Jr. Board Connector,

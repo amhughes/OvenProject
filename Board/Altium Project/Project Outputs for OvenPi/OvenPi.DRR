@@ -1,0 +1,18 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: OvenPi.PcbDoc   4/26/2016  10:13:36 PM
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : OvenPi.TXT
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        35mil (0.889mm)          Round          29               3.61 Inch (91.60 mm)
+T2        71mil (1.8034mm)         Round          4                0.55 Inch (13.90 mm)
+T3        75mil (1.905mm)          Round          4                0.92 Inch (23.28 mm)
+T4        120mil (3.048mm)         Round          1                0.00 Inch (0.00 mm)
+T5        126mil (3.2004mm)        Round          2                0.35 Inch (8.89 mm)
+---------------------------------------------------------------------------
+Totals                                            40               5.42 Inch (137.67 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:00
