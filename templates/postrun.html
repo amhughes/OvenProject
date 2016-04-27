@@ -1,15 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if session.logged_in %}
-    <form action="{{url_for('tune')}}" method=post class=tune>
+    <form action="{{url_for('tuning')}}" method=post class=tuning>
       <dl>
-        <dt>Kp:
-        <dd><input type=text size=18 name=kp>
-        <dt>Ki:
-        <dd><input type=text size=18 name=ki>
-        <dt>Kd:
-        <dd><input type=text size=18 name=kd>
-        <dd><input type=submit value=Update>
+        <dd><input type=submit value=Tune>
       </dl>
     </form>
   {% endif %}

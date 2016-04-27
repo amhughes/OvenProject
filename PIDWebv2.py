@@ -6,9 +6,6 @@ import RPi.GPIO as GPIO
 from time import perf_counter
 import time
 import threading
-#from RPLCD import CharLCD
-#from RPLCD import Alignment, CursorMode, ShiftMode
-#from RPLCD import cursor, cleared
 import os
 from werkzeug import secure_filename
 import csv
@@ -17,23 +14,15 @@ from statistics import mean
 from collections import deque
 
 #Import Tunings
-
-#tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'r')
-#kpt = tuneFile.readline()
-#kit = tuneFile.readline()
-#kdt = tuneFile.readline()
-#kpt = kpt.rstrip('\n')
-#kit = kit.rstrip('\n')
-#kdt = kdt.rstrip('\n')
-#kpt = kpt.lstrip('kp=')
-#kit = kit.lstrip('ki=')
-#kdt = kdt.lstrip('kd=')
-#tuneFile.close()
-
-#kp = float(kpt)
-#ki = float(kit)
-#kd = float(kdt)
-
+tuneParams = [[],[],[],[]]
+with open(('/home/pi/OvenProject/data/tunefile.csv') , newline='') as csvfile:
+    tunereader = csv.reader(csvfile, dialect='excel')
+    next(tunereader)
+    for row in tunereader:
+        tuneParams[0].append(float(row[0]))
+        tuneParams[1].append(float(row[1]))
+        tuneParams[2].append(float(row[2]))
+        tuneParams[3].append(float(row[3]))
 
 #Flask Settings
 
@@ -42,7 +31,7 @@ SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'PrISUm14'
 
-UPLOAD_FOLDER = '/home/pi/OvenProject/data/uploads'
+UPLOAD_FOLDER = '/home/pi/OvenProject/data'
 ALLOWED_EXTENSIONS = set(['csv'])
 
 app = Flask(__name__)
@@ -97,9 +86,6 @@ class PIDloop(threading.Thread):
         units = 'f'
         thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
 
-        #Character LCD Setup, currently abandoned
-#        c = CharLCD(0x27, numbering_mode=GPIO.BCM, rows=2, cols=16)
-
         #Initial loop variable setup
         killStatus = False
         firstRamp = True
@@ -125,43 +111,21 @@ class PIDloop(threading.Thread):
                 err = setPoint - currentTemp
 
                 #Gain scheduling
-                if err > 10:
-                    kp = 10
-                    ki = 0
-                    kd = 0
-                    if kset != 1:
+                for n in range(len(tuneParams)):
+                    if err > tuneParams[0][n]:
+                        kp = tuneParams[1][n]
+                        ki = tuneParams[2][n]
+                        kd = tuneParams[3][n]
+                        if kset != n:
+                            if kset < n:
+                                intErr = 0
+                            kset = n
+                        break
+                    else:
+                        kp = 0
+                        ki = 0
+                        kd = 0
                         intErr = 0
-                        kset = 1
-                elif err > 5:
-                    kp = 5
-                    ki = 0.1
-                    kd = 10
-                    if kset != 2:
-                        if kset < 2:
-                            intErr = 0
-                        kset = 2
-                elif err > 2:
-                    kp = 5
-                    ki = 0.2
-                    kd = 20
-                    if kset != 3:
-                        if kset < 3:
-                            intErr = 0
-                        kset = 3
-                elif err > 0:
-                    kp = 5
-                    ki = 0.1
-                    kd = 25
-                    if kset != 4:
-                        intErr = 0
-                        kset = 4
-                else:
-                    kp = 0
-                    ki = 0
-                    kd = 0
-                    if kset != 5:
-                        intErr = 0
-                        kset = 5
 
                 #Integral term
                 intErr += ki*err
@@ -185,12 +149,6 @@ class PIDloop(threading.Thread):
                     output = outMin
                 relay.ChangeDutyCycle(output)
 
-                #Character LCD update, currently abandoned
-#                c.cursor_pos = (0, 0)
-#                c.write_string('T:' + str(currentTemp) + ' SP:' + str(setPoint))
-#                c.cursor_pos = (1, 0)
-#                c.write_string('Out:' + str(output))
-
                 tempOld = currentTemp
 
             #Ramp and data logging
@@ -204,17 +162,17 @@ class PIDloop(threading.Thread):
                     timeOldR = perf_counter()
                     tempL.append(currentTemp)
                     outputL.append(output)
-                    logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'a')
-                    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-                    spamwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
-                    spamwriter.writerow([logTime, setPoint, currentTemp, output])
+                    logFile = open('/home/pi/OvenProject/data/logfile.csv', 'a')
+                    logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+                    logwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
+                    logwriter.writerow([logTime, setPoint, currentTemp, output])
                     firstRamp = False
 
                 #Data logging
                 if logCount == 15:
                     logTime += 0.25
                     logCount = 0
-                    spamwriter.writerow([logTime, setPoint, currentTemp, output])
+                    logwriter.writerow([logTime, setPoint, currentTemp, output])
 
                 #setpoint update
                 if (timeP-timeOldR)>60:
@@ -231,7 +189,6 @@ class PIDloop(threading.Thread):
         #Cleanup
         logFile.close()
         relay.stop()
-#        c.close()
         GPIO.cleanup()
 
 #Create loop
@@ -300,18 +257,41 @@ def kill():
     status = 4
     return redirect(url_for('main'))
 
+#Allows the uploads of tunings
+@app.route('/tuning', methods=['GET', 'POST'])
+def tuning():
+    return render_template('tuning.html')
+
+#Recieve program upload
+@app.route('/uploadt', methods=['GET', 'POST'])
+def uploadt():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('tune',
+                                    filename=filename))
+
 #Sets the tuning parameters
-@app.route('/tune', methods=['POST'])
-def tune():
-    global kp, ki, kd
+@app.route('/tune/<filename>')
+def tune(filename):
+    global tuneParams
     if not session.get('logged_in'):
         abort(401)
-    kp = float(request.form['kp'])
-    ki = float(request.form['ki'])
-    kd = float(request.form['kd'])
-    tuneFile = open('/home/pi/OvenProject/data/tunings.txt', 'w')
-    tuneFile.write(('kp=' + str(kp) + '\nki=' + str(ki) + '\nkd=' + str(kd) + '\n'))
-    tuneFile.close()
+    with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
+        tunereader = csv.reader(csvfile, dialect='excel')
+        tuneFile = open('/home/pi/OvenProject/data/tunefile.csv', 'w')
+        tunewriter = csv.writer(tuneFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+        tunewriter.writerow(['Err Bound', 'Kp', 'Ki', 'Kd'])
+        next(tunereader)
+        for row in tunereader:
+            tuneParams[0].append(float(row[0]))
+            tuneParams[1].append(float(row[1]))
+            tuneParams[2].append(float(row[2]))
+            tuneParams[3].append(float(row[3]))
+            tunewriter.writerow([row[0], row[1], row[2], row[3]])
+        tuneFile.close()
     flash('Tunings Updated')
     return redirect(url_for('main'))
 
@@ -326,9 +306,9 @@ def profile():
     holdTime = int(request.form['HoldTim'])
     heatRate = float(request.form['UR'])
     coolRate = float(request.form['DR'])
-    logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'w')
-    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow([runName])
+    logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
+    logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+    logwriter.writerow([runName])
     logFile.close()
     outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
@@ -386,9 +366,9 @@ def profile2():
     holdTime2 = int(request.form['HoldTim2'])
     heatRate2 = float(request.form['UR2'])
     coolRate = float(request.form['DR'])
-    logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'w')
-    spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow([runName])
+    logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
+    logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+    logwriter.writerow([runName])
     logFile.close()
     outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
     outputFile.write('Time    SP\n')
@@ -459,6 +439,11 @@ def download():
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                'logfile.csv')
 
+@app.route('/downloadt', methods=['POST'])
+def downloadt():
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               'tunefile.csv')
+
 #File type checking
 def allowed_file(filename):
     return '.' in filename and \
@@ -479,15 +464,15 @@ def uploadp():
 @app.route('/uploads/<filename>')
 def compprogram(filename):
     global status, timeL, setPointL
-    with open(('/home/pi/OvenProject/data/uploads/' + filename) , newline='') as csvfile:
-        spamreader = csv.reader(csvfile, dialect='excel', quoting=csv.QUOTE_NONNUMERIC)
-        logFile = open('/home/pi/OvenProject/data/uploads/logfile.csv', 'w')
-        spamwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow([filename])
+    with open(('/home/pi/OvenProject/data/' + filename) , newline='') as csvfile:
+        progreader = csv.reader(csvfile, dialect='excel')
+        logFile = open('/home/pi/OvenProject/data/logfile.csv', 'w')
+        logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
+        logwriter.writerow([filename])
         logFile.close()
         outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
         outputFile.write('Time    SP\n')
-        for row in spamreader:
+        for row in progreader:
             setPointL.append(row[1])
             timeL.append(int(row[0]))
             outputFile.write(str(int(row[0])) + ' ' + str(row[1]) + '\n')

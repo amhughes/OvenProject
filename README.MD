@@ -11,5 +11,3 @@ Place the following line in the root crontab to use.
 
 Dependancies:
 Flask (install via PIP3)
-
-RPLCD if using the character display
