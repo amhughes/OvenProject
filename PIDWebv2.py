@@ -164,7 +164,7 @@ class PIDloop(threading.Thread):
                     outputL.append(output)
                     logFile = open('/home/pi/OvenProject/data/logfile.csv', 'a')
                     logwriter = csv.writer(logFile, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-                    logwriter.writerow(['Time', 'SP', 'Temp', 'Output'])
+                    logwriter.writerow(['Time (min)', 'Setpoint (deg F)', 'Temperature (deg F)', 'Relay On (%)'])
                     logwriter.writerow([logTime, setPoint, currentTemp, output])
                     firstRamp = False
 
