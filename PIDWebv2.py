@@ -473,7 +473,7 @@ def compprogram(filename):
         outputFile = open('/home/pi/OvenProject/data/schedule.txt', 'w')
         outputFile.write('Time    SP\n')
         for row in progreader:
-            setPointL.append(row[1])
+            setPointL.append(float(row[1]))
             timeL.append(int(row[0]))
             outputFile.write(str(int(row[0])) + ' ' + str(row[1]) + '\n')
     outputFile.close()
